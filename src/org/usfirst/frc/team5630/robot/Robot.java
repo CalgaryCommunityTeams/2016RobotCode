@@ -32,7 +32,7 @@ public class Robot extends IterativeRobot {
 	 */
 	public void robotInit() {
 		myRobot = new RobotDrive(0, 1, 2, 3);
-		flywheel = new Talon(4); // Example, change 4 to real number later
+		flywheel = new Talon(4);
 		intake = new Talon(5);
 		arm = new Talon(6);
 		stick = new Joystick(0);
@@ -72,16 +72,17 @@ public class Robot extends IterativeRobot {
 	 * This function is called periodically during operator control
 	 */
 	public void teleopPeriodic() {
-		runFlywheel = stick.getRawButton(0);// Set this to be the flywheel input (Bool)
+		runFlywheel = stick.getRawButton(1);// Set this to be the flywheel input (Bool)
 		
-		armSpeed = stick.getRawAxis(3)-stick.getRawAxis(2);// Set this to be the armSpeed input (double)
+		armSpeed = stick.getRawAxis(3) - stick.getRawAxis(2);// Set this to be the armSpeed input (double)
 		
-		intakeSpeed = stick.getRawAxis(5); // Set this to be the intakeSpeed input (double)
+		intakeSpeed = stick.getRawAxis(5) / 2; // Set this to be the intakeSpeed input (double)
+		//This is to reduce the speed of the intake motor
 	
 		if (flywheelRunLast != runFlywheel) { // Enables Togglling
 			flywheelRunLast = runFlywheel;
 			if (flywheelRunLast == true)
-				counter = (counter+1)%2; // If the counter is 0, it becomes 1, if the counter is 1, it becomes 0 -C. Zheng 2016-1-28
+				counter = (counter + 1) % 2; // If the counter is 0, it becomes 1, if the counter is 1, it becomes 0 -C. Zheng 2016-1-28
 		}
 
 		if (counter == 1) {
