@@ -17,8 +17,10 @@ public class Robot extends IterativeRobot {
 	RobotDrive myRobot;
 	Talon flywheel;
 	Talon intake;
+	Talon arm;
 	Joystick stick;
 	double intakeSpeed;
+	double armSpeed;
 	int autoLoopCounter;
 	boolean flywheelRunLast;
 	boolean runFlywheel;
@@ -65,21 +67,26 @@ public class Robot extends IterativeRobot {
 	 * This function is called periodically during operator control
 	 */
 	public void teleopPeriodic() {
-		runFlywheel = stick.getRawButton(0);// Set this to be the flywheel imput
-											// (Bool)
-		intakeSpeed = stick.getZ(); // Left Trigger
+		runFlywheel = stick.getRawButton(0);// Set this to be the flywheel input (Bool)
+		
+		armSpeed = stick.getRawAxis(3);// Set this to be the armSpeed input (double)
+		
+		intakeSpeed = stick.getRawAxis(2); // Set this to be the intakeSpeed input (double)
 
 		if (flywheelRunLast != runFlywheel) { // Enables Togglling
 			flywheelRunLast = runFlywheel;
 		}
 		if (runFlywheel) {
-			flywheel.set(0.5); // Flywheel Speed is changed here
+			flywheel.set(0.5); // flywheel Speed is changed here
 		} else {
 			flywheel.set(0.0);
 		}
 
 		intakeSpeed = (intakeSpeed / 2) + 0.5;
 		intake.set(intakeSpeed);
+		
+		armSpeed = (armSpeed / 2) + 0.5;
+		arm.set(armSpeed);
 
 		myRobot.arcadeDrive(stick);
 	}
