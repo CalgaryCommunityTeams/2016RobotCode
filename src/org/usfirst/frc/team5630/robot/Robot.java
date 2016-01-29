@@ -79,7 +79,7 @@ public class Robot extends IterativeRobot {
 		if (runFlywheel) {
 			flywheel.set(0.5); // flywheel Speed is changed here
 		} else {
-			flywheel.set(0.0);
+			flywheel.set(0.0); // flywheel stops
 		}
 
 		intakeSpeed = (intakeSpeed / 2) + 0.5;
