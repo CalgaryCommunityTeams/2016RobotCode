@@ -76,8 +76,9 @@ public class Robot extends IterativeRobot {
 		
 		armSpeed = stick.getRawAxis(3) - stick.getRawAxis(2);// Set this to be the armSpeed input (double)
 		
-		intakeSpeed = stick.getRawAxis(5) / 2; // Set this to be the intakeSpeed input (double)
+		intakeSpeed = -stick.getRawAxis(5) / 2; // Set this to be the intakeSpeed input (double)
 		//This is to reduce the speed of the intake motor
+		//Changed to negative to make intake controller more intuitive. -C. Zheng 2016-1-29
 	
 		if (flywheelRunLast != runFlywheel) { // Enables Togglling
 			flywheelRunLast = runFlywheel;
@@ -86,10 +87,10 @@ public class Robot extends IterativeRobot {
 		}
 
 		if (counter == 1) {
-			flywheel.set(1.0); // flywheel Speed is changed here 
+			flywheel.set(-1.0); // flywheel Speed is changed here 
 			//This is 1.0 because we tested it at this value and nothing f*cked up -C. Zheng 2016-1-28
-		
-		} else {
+			//Changed to -1.0 because it was reversed. -C. Zheng 2016-1-29
+			} else {
 			flywheel.set(0.0); // flywheel stops
 		}
 		//intakeSpeed = (intakeSpeed / 2) + 0.5;
@@ -98,6 +99,7 @@ public class Robot extends IterativeRobot {
 		intake.set(intakeSpeed);
 		arm.set(armSpeed);
 		myRobot.arcadeDrive(stick);
+		;
 	}
 
 	/**
