@@ -76,9 +76,8 @@ public class Robot extends IterativeRobot {
 		
 		armSpeed = stick.getRawAxis(3) - stick.getRawAxis(2);// Set this to be the armSpeed input (double)
 		
-		intakeSpeed = -stick.getRawAxis(5) / 2; // Set this to be the intakeSpeed input (double)
+		intakeSpeed = stick.getRawAxis(5) / 2; // Set this to be the intakeSpeed input (double)
 		//This is to reduce the speed of the intake motor
-		//Changed to negative to make intake controller more intuitive. -C. Zheng 2016-1-29
 	
 		if (flywheelRunLast != runFlywheel) { // Enables Togglling
 			flywheelRunLast = runFlywheel;
@@ -98,7 +97,7 @@ public class Robot extends IterativeRobot {
 		//Commented because these were based off the Trigger buttons going from -1 to 1, with -1 being the "not pressed" position. This is not the case. The triggers go from 0 to 1.
 		intake.set(intakeSpeed);
 		arm.set(armSpeed);
-		myRobot.arcadeDrive(stick);
+		myRobot.arcadeDrive(stick.getY(),-stick.getX());
 		;
 	}
 
