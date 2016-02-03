@@ -1,6 +1,7 @@
 package org.usfirst.frc.team5630.robot;
 
 import edu.wpi.first.wpilibj.CANTalon;
+import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
@@ -30,7 +31,7 @@ public class Robot extends IterativeRobot {
 	boolean flywheelRunLast;
 	boolean runFlywheel;
 	CANTalon flyWheel;
-
+    CameraServer Camera;
 
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -51,6 +52,10 @@ public class Robot extends IterativeRobot {
 	    flyWheel.setProfile(0);
 	    flyWheel.setPID(0.22, 0.0, 0.0);
 	    flyWheel.setF(0.1097);
+        Camera = CameraServer.getInstance();
+        Camera.setQuality(50);
+        //the camera name (ex "cam0") can be found through the roborio web interface
+
 	    //Basically copy-pasta'd the code from an example code.
 	}
 
@@ -84,6 +89,7 @@ public class Robot extends IterativeRobot {
 		flySpeed = 0.8;
 		direction = 1;
 		flywheelRunLast=false;
+        Camera.startAutomaticCapture("cam0");
 	}
 
 	/**
