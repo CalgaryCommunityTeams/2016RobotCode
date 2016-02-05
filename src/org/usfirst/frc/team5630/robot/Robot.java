@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
  */
 public class Robot extends IterativeRobot {
 	RobotDrive myRobot;
-	//Talon flywheel;
+	Talon flyWheel;
 	Talon intake;
 	Talon arm;
 	Joystick stick;
@@ -30,7 +30,7 @@ public class Robot extends IterativeRobot {
 	boolean directionToggle, directionToggleLast;
 	boolean flywheelRunLast;
 	boolean runFlywheel;
-	CANTalon flyWheel;
+//	CANTalon flyWheel;
     CameraServer Camera;
 
 	/**
@@ -39,19 +39,19 @@ public class Robot extends IterativeRobot {
 	 */
 	public void robotInit() {
 		myRobot = new RobotDrive(0, 1, 2, 3);
-		//flywheel = new Talon(4);
+		flyWheel = new Talon(4);
 		intake = new Talon(5);
 		arm = new Talon(6);
 		stick = new Joystick(0);
-		flyWheel = new CANTalon(0); // Initialize the CanTalonSRX on device 1.
-	    flyWheel.setFeedbackDevice(CANTalon.FeedbackDevice.CtreMagEncoder_Relative);
-	    flyWheel.changeControlMode(CANTalon.TalonControlMode.Speed);
-	    flyWheel.reverseSensor(false);
-	    flyWheel.configNominalOutputVoltage(+0.0f, -0.0f);
-	    flyWheel.configPeakOutputVoltage(+12.0f, -0.0f);
-	    flyWheel.setProfile(0);
-	    flyWheel.setPID(0.22, 0.0, 0.0);
-	    flyWheel.setF(0.1097);
+//		flyWheel = new CANTalon(0); // Initialize the CanTalonSRX on device 1.
+//	    flyWheel.setFeedbackDevice(CANTalon.FeedbackDevice.CtreMagEncoder_Relative);
+//	    flyWheel.changeControlMode(CANTalon.TalonControlMode.Speed);
+//	    flyWheel.reverseSensor(false);
+//	    flyWheel.configNominalOutputVoltage(+0.0f, -0.0f);
+//	    flyWheel.configPeakOutputVoltage(+12.0f, -0.0f);
+//	    flyWheel.setProfile(0);
+//	    flyWheel.setPID(0.22, 0.0, 0.0);
+//	    flyWheel.setF(0.1097);
         Camera = CameraServer.getInstance();
         Camera.setQuality(50);
         //the camera name (ex "cam0") can be found through the roborio web interface
@@ -111,14 +111,21 @@ public class Robot extends IterativeRobot {
 		// Set this to be the intakeSpeed input (double)
 		//This is to reduce the speed of the intake motor{
 	
-		{
 			if (stick.getRawButton(3) == true && stick.getRawButton(2) == false && stick.getRawButton(4) == false)
-				flySpeed = 4000;//The motor doesn't reach 4000 RPM
+			{
+//				flySpeed = 4000;//The motor doesn't reach 4000 RPM
+				flySpeed = 1.0;
+			}
 			else if (stick.getRawButton(4) == true && stick.getRawButton(2) == false && stick.getRawButton(3) == false)
-				flySpeed = 1200; //Maxs out at 1200 RPM
+			{
+//				flySpeed = 1200; //Maxs out at 1200 RPM
+				flySpeed = 0.8;
+			}
 			else if (stick.getRawButton(2) == true && stick.getRawButton(3) == false && stick.getRawButton(4) == false)
-				flySpeed = 600;
-		}
+			{
+//				flySpeed = 600;
+				flySpeed = 0.6;
+			}
 		
 		
 		if (flywheelRunLast != runFlywheel) 
