@@ -22,7 +22,7 @@ public class Robot extends IterativeRobot {
 	double flySpeed, armSpeed, intakeSpeed;
 	int autoLoopCounter, flyToggle, direction;
 	boolean directionToggle, directionToggleLast, runFlywheel, flywheelRunLast;
-	boolean rawButton1, rawButton2, rawButton3, rawButton4, rawButton5, rawButton6, rawButton7, rawButton8;
+	boolean buttonA, buttonB, buttonX, buttonY, buttonLB, buttonRB, buttonBack, buttonStart;
 	// CANTalon flyWheel;
 	CameraServer Camera;
 
@@ -91,25 +91,25 @@ public class Robot extends IterativeRobot {
 	 * This function is called periodically during operator control
 	 */
 	public void teleopPeriodic() {
-		rawButton1 = stick.getRawButton(1);//Used to have a bunch of stick.getRawButton(x) in code
-		rawButton2 = stick.getRawButton(2);//It's good practice to put these in variables
-		rawButton3 = stick.getRawButton(3);
-		rawButton4 = stick.getRawButton(4);
-		rawButton5 = stick.getRawButton(5);
-		rawButton6 = stick.getRawButton(6);
-		rawButton7 = stick.getRawButton(7);//rawButton7 is unused, but solves code OCD -Alexander
-		rawButton8 = stick.getRawButton(8);
-		
-		runFlywheel = getRawButton(1);// Set this to be the flyWheel input
+		buttonA = stick.getRawButton(1);//Used to have a bunch of stick.getRawButton(x) in code
+		buttonB = stick.getRawButton(2);//It's good practice to put these in variables
+		buttonX = stick.getRawButton(3);
+		buttonY = stick.getRawButton(4);
+		buttonLB = stick.getRawButton(5);
+		buttonRB = stick.getRawButton(6);
+		buttonBack = stick.getRawButton(7);//Back is unused, but solves code OCD -Alexander
+		buttonStart = stick.getRawButton(8);
+
+		runFlywheel = buttonA;// Set this to be the flyWheel input
 											// (Boolean)
-		directionToggle = rawButton8;
+		directionToggle = buttonStart;
 		armSpeed = stick.getRawAxis(3) - stick.getRawAxis(2);// Set this to be
 																// the armSpeed
 																// input
 																// (double)
 
-		if (rawButton5 != rawButton6) {
-			if (rawButton5 == true)
+		if (buttonLB != buttonRB) {
+			if (buttonLB == true)
 				intakeSpeed = 0.5;
 			else
 				intakeSpeed = -1;
@@ -118,18 +118,18 @@ public class Robot extends IterativeRobot {
 		// Set this to be the intakeSpeed input (double)
 		// This is to reduce the speed of the intake motor{
 
-		if (rawButton3 == true && rawButton2 == false
-				&& rawButton4 == false) {
+		if (buttonX == true && buttonB == false
+				&& buttonY == false) {
 			// flySpeed = 4000;//The motor doesn't reach 4000 RPM
 			flySpeed = 1.0;
-		} else if (rawButton4 == true
-				&& rawButton2 == false
-				&& rawButton3 == false) {
+		} else if (buttonY == true
+				&& buttonB == false
+				&& buttonX == false) {
 			// flySpeed = 1200; //Maxs out at 1200 RPM
 			flySpeed = 0.8;
-		} else if (rawButton2 == true
-				&& rawButton3 == false
-				&& rawButton4 == false) {
+		} else if (buttonB == true
+				&& buttonX == false
+				&& buttonY == false) {
 			// flySpeed = 600;
 			flySpeed = 0.6;
 		}
@@ -156,7 +156,8 @@ public class Robot extends IterativeRobot {
 			// Changed to -1.0 because it was reversed. -C. Zheng 2016-1-29
 			// Now sets the Talon SRX to the set speed
 		} else
-			flyWheel.set(0); // flywheel stops
+			flyWheel.set(0);
+		// flywheel stops
 		// intakeSpeed = (intakeSpeed / 2) + 0.5;
 		// armSpeed = (armSpeed / 2) + 0.5;
 		// Commented because these were based off the Trigger buttons going from
