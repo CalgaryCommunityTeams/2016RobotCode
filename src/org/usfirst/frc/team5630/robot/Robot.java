@@ -134,7 +134,7 @@ public class Robot extends IterativeRobot {
 			flySpeed = 0.6;
 		}
 
-		if (flywheelRunLast != runFlywheel) { // Enables Togglling
+		if (flywheelRunLast != runFlywheel) { // Enables Toggling
 			flywheelRunLast = runFlywheel;
 			if (flywheelRunLast == true)
 				flyToggle = (flyToggle + 1) % 2; // If the counter is 0, it
