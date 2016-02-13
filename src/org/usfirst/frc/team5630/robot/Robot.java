@@ -2,6 +2,7 @@ package org.usfirst.frc.team5630.robot;
 
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
@@ -19,12 +20,14 @@ public class Robot extends IterativeRobot {
 	RobotDrive myRobot;
 	Joystick stick;
 	Talon flyWheel, intake, arm;
-	double flySpeed, armSpeed, intakeSpeed;
-	int autoLoopCounter, flyToggle, direction;
-	boolean directionToggle, directionToggleLast, runFlywheel, flywheelRunLast;
+    DigitalInput bumper;
+	double flySpeed, armSpeed;
+	int autoLoopCounter, flyToggle, direction, autoIntakeTimer;
+	boolean buttonStartLast, buttonALast, autoIntake;
 	boolean buttonA, buttonB, buttonX, buttonY, buttonLB, buttonRB, buttonBack, buttonStart;
-	// CANTalon flyWheel;
 	CameraServer Camera;
+	// CANTalon flyWheel;
+
 
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -36,6 +39,7 @@ public class Robot extends IterativeRobot {
 		intake = new Talon(5);
 		arm = new Talon(6);
 		stick = new Joystick(0);
+        bumper = new DigitalInput(0);
 		// flyWheel = new CANTalon(0); // Initialize the CanTalonSRX on device
 		// 1.
 		// flyWheel.setFeedbackDevice(CANTalon.FeedbackDevice.CtreMagEncoder_Relative);
@@ -46,8 +50,7 @@ public class Robot extends IterativeRobot {
 		// flyWheel.setProfile(0);
 		// flyWheel.setPID(0.22, 0.0, 0.0);
 		// flyWheel.setF(0.1097);
-		Camera = CameraServer.getInstance();
-		Camera.setQuality(50);
+
 		// the camera name (ex "cam0") can be found through the roboRIO web
 		// interface
 
@@ -83,7 +86,10 @@ public class Robot extends IterativeRobot {
 		flyToggle = 0;
 		flySpeed = 0.8;
 		direction = 1;
-		flywheelRunLast = false;
+		buttonALast = false;
+		autoIntake = false;
+		Camera = CameraServer.getInstance();
+		Camera.setQuality(50);
 		Camera.startAutomaticCapture("cam0");
 	}
 
@@ -100,23 +106,25 @@ public class Robot extends IterativeRobot {
 		buttonBack = stick.getRawButton(7);//Back is unused, but solves code OCD -Alexander
 		buttonStart = stick.getRawButton(8);
 
-		runFlywheel = buttonA;// Set this to be the flyWheel input
-											// (Boolean)
-		directionToggle = buttonStart;
 		armSpeed = stick.getRawAxis(3) - stick.getRawAxis(2);// Set this to be
 																// the armSpeed
 																// input
 																// (double)
-
-		if (buttonLB != buttonRB) {
-			if (buttonLB == true)
-				intakeSpeed = 0.5;
-			else
-				intakeSpeed = -1;
-		} else
-			intakeSpeed = 0;
-		// Set this to be the intakeSpeed input (double)
-		// This is to reduce the speed of the intake motor{
+    	if (autoIntake == true)
+    	{
+    		intake.set(0.5);
+    		autoIntakeTimer++;
+    		if(autoIntakeTimer > 1500 || bumper.get() == false)
+    		{
+    			autoIntake = false;
+    			intake.set(0);
+    		}
+    	}
+    	else if(buttonBack == true)
+    	{
+    		autoIntake = true;
+    		autoIntakeTimer = 0;
+		}
 
 		if (buttonX == true && buttonB == false
 				&& buttonY == false) {
@@ -134,17 +142,17 @@ public class Robot extends IterativeRobot {
 			flySpeed = 0.6;
 		}
 
-		if (flywheelRunLast != runFlywheel) { // Enables Toggling
-			flywheelRunLast = runFlywheel;
-			if (flywheelRunLast == true)
+		if (buttonALast != buttonA) { // Enables Toggling
+			buttonALast = buttonA;
+			if (buttonALast == true)
 				flyToggle = (flyToggle + 1) % 2; // If the counter is 0, it
 													// becomes 1, if the counter
 													// is 1, it becomes 0 -C.
 													// Zheng 2016-1-28
 		}
-		if (directionToggleLast != directionToggle) {
-			directionToggleLast = directionToggle;
-			if (directionToggleLast == true)
+		if (buttonStartLast != buttonStart) {
+			buttonStartLast = buttonStart;
+			if (buttonStartLast == true)
 				direction = -direction; // If the counter is 0, it becomes 1, if
 										// the counter is 1, it becomes 0 -C.
 										// Zheng 2016-1-28
@@ -163,7 +171,7 @@ public class Robot extends IterativeRobot {
 		// Commented because these were based off the Trigger buttons going from
 		// -1 to 1, with -1 being the "not pressed" position. This is not the
 		// case. The triggers go from 0 to 1.
-		intake.set(intakeSpeed);
+
 		arm.set(armSpeed / 2);
 		myRobot.arcadeDrive(direction * stick.getY(), -stick.getX());
 
