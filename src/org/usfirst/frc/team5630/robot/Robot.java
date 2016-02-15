@@ -167,7 +167,7 @@ public class Robot extends IterativeRobot {
 		arm.set(armSpeed / 2);
 		
 		//myRobot.arcadeDrive(direction * stick.getY(), -stick.getX()); One Joystick Drive
-		myRobot.arcadeDrive(direction * stick.getRawAxis(1), stick.getRawAxis(4));
+		myRobot.arcadeDrive(direction * stick.getRawAxis(1), -1 * stick.getRawAxis(4));
 	}
 
 	/**
