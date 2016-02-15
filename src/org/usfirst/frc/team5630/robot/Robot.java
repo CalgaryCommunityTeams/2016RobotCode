@@ -165,8 +165,9 @@ public class Robot extends IterativeRobot {
 		// case. The triggers go from 0 to 1.
 		intake.set(intakeSpeed);
 		arm.set(armSpeed / 2);
-		myRobot.arcadeDrive(direction * stick.getY(), -stick.getX());
-
+		
+		//myRobot.arcadeDrive(direction * stick.getY(), -stick.getX()); One Joystick Drive
+		myRobot.arcadeDrive(direction * stick.getRawAxis(1), stick.getRawAxis(4));
 	}
 
 	/**
