@@ -20,10 +20,11 @@ public class Robot extends IterativeRobot {
 	RobotDrive myRobot;
 	Joystick stick;
 	Talon flyWheel, intake, arm;
-    DigitalInput bumper;
-	double flySpeed, armSpeed;
+    DigitalInput intakeBumper;
+    final int maxIntakeTime = 1500, extraIntake = 7;
+	double flySpeed, armSpeed, intakeSpeed = 0.5;
 	int autoLoopCounter, flyToggle, direction, autoIntakeTimer;
-	boolean buttonStartLast, buttonALast, autoIntake;
+	boolean buttonStartLast, buttonALast, autoIntake, buttonBackLast = false;
 	boolean buttonA, buttonB, buttonX, buttonY, buttonLB, buttonRB, buttonBack, buttonStart;
 	CameraServer Camera;
 	// CANTalon flyWheel;
@@ -39,7 +40,7 @@ public class Robot extends IterativeRobot {
 		intake = new Talon(5);
 		arm = new Talon(6);
 		stick = new Joystick(0);
-        bumper = new DigitalInput(0);
+        intakeBumper = new DigitalInput(0);
 		// flyWheel = new CANTalon(0); // Initialize the CanTalonSRX on device
 		// 1.
 		// flyWheel.setFeedbackDevice(CANTalon.FeedbackDevice.CtreMagEncoder_Relative);
@@ -110,22 +111,36 @@ public class Robot extends IterativeRobot {
 																// the armSpeed
 																// input
 																// (double)
-    	if (autoIntake == true)
+    	if (autoIntake == true) 
     	{
-    		intake.set(0.5);
+    		intake.set(-intakeSpeed);
     		autoIntakeTimer++;
-    		if(autoIntakeTimer > 1500 || bumper.get() == false)
+    		if(intakeBumper.get() == false && autoIntakeTimer < maxIntakeTime-extraIntake)
+    		{
+    			autoIntakeTimer = maxIntakeTime-extraIntake;
+    		}
+    		
+    		if(autoIntakeTimer > maxIntakeTime || (buttonBack && !buttonBackLast) || buttonLB || buttonRB)
     		{
     			autoIntake = false;
     			intake.set(0);
     		}
     	}
-    	else if(buttonBack == true)
+    	else if(buttonBack && !buttonBackLast)
     	{
     		autoIntake = true;
     		autoIntakeTimer = 0;
 		}
-
+    	if(buttonRB)
+    	{
+    		intake.set(-intakeSpeed);
+    	}else if (buttonLB)
+    	{
+    		intake.set(intakeSpeed);
+    	}else if (!autoIntake)
+    	{
+    		intake.set(0);
+    	}
 		if (buttonX == true && buttonB == false
 				&& buttonY == false) {
 			// flySpeed = 4000;//The motor doesn't reach 4000 RPM
@@ -172,6 +187,7 @@ public class Robot extends IterativeRobot {
 		// -1 to 1, with -1 being the "not pressed" position. This is not the
 		// case. The triggers go from 0 to 1.
 
+		buttonBackLast = buttonBack;
 		arm.set(armSpeed / 2);
 		myRobot.arcadeDrive(direction * stick.getY(), -stick.getX());
 
