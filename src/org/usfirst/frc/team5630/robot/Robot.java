@@ -20,15 +20,14 @@ public class Robot extends IterativeRobot {
 	RobotDrive myRobot;
 	Joystick stick;
 	Talon flyWheel, intake, arm;
-    DigitalInput intakeBumper;
-    final int maxIntakeTime = 1500, extraIntake = 7;
+	DigitalInput intakeBumper;
+	final int maxIntakeTime = 1500, extraIntake = 7;
 	double flySpeed, armSpeed, intakeSpeed = 0.5;
 	int autoLoopCounter, flyToggle, direction, autoIntakeTimer;
 	boolean buttonStartLast, buttonALast, autoIntake, buttonBackLast = false;
 	boolean buttonA, buttonB, buttonX, buttonY, buttonLB, buttonRB, buttonBack, buttonStart;
 	CameraServer Camera;
 	// CANTalon flyWheel;
-
 
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -40,7 +39,7 @@ public class Robot extends IterativeRobot {
 		intake = new Talon(5);
 		arm = new Talon(6);
 		stick = new Joystick(0);
-        intakeBumper = new DigitalInput(0);
+		intakeBumper = new DigitalInput(0);
 		// flyWheel = new CANTalon(0); // Initialize the CanTalonSRX on device
 		// 1.
 		// flyWheel.setFeedbackDevice(CANTalon.FeedbackDevice.CtreMagEncoder_Relative);
@@ -69,14 +68,6 @@ public class Robot extends IterativeRobot {
 	 * This function is called periodically during autonomous
 	 */
 	public void autonomousPeriodic() {
-		if (autoLoopCounter < 100) // Check if we've completed 100 loops
-									// (approximately 2 seconds)
-		{
-			myRobot.drive(-0.5, 0.0); // drive forwards half speed
-			autoLoopCounter++;
-		} else {
-			myRobot.drive(0.0, 0.0); // stop robot
-		}
 	}
 
 	/**
@@ -98,61 +89,46 @@ public class Robot extends IterativeRobot {
 	 * This function is called periodically during operator control
 	 */
 	public void teleopPeriodic() {
-		buttonA = stick.getRawButton(1);//Used to have a bunch of stick.getRawButton(x) in code
-		buttonB = stick.getRawButton(2);//It's good practice to put these in variables
+		buttonA = stick.getRawButton(1);
+		buttonB = stick.getRawButton(2);
 		buttonX = stick.getRawButton(3);
 		buttonY = stick.getRawButton(4);
 		buttonLB = stick.getRawButton(5);
 		buttonRB = stick.getRawButton(6);
-		buttonBack = stick.getRawButton(7);//Back is unused, but solves code OCD -Alexander
+		buttonBack = stick.getRawButton(7);
 		buttonStart = stick.getRawButton(8);
 
-		armSpeed = stick.getRawAxis(3) - stick.getRawAxis(2);// Set this to be
-																// the armSpeed
-																// input
-																// (double)
-    	if (autoIntake == true) 
-    	{
-    		intake.set(-intakeSpeed);
-    		autoIntakeTimer++;
-    		if(intakeBumper.get() == false && autoIntakeTimer < maxIntakeTime-extraIntake)
-    		{
-    			autoIntakeTimer = maxIntakeTime-extraIntake;
-    		}
-    		
-    		if(autoIntakeTimer > maxIntakeTime || (buttonBack && !buttonBackLast) || buttonLB || buttonRB)
-    		{
-    			autoIntake = false;
-    			intake.set(0);
-    		}
-    	}
-    	else if(buttonBack && !buttonBackLast)
-    	{
-    		autoIntake = true;
-    		autoIntakeTimer = 0;
+		armSpeed = stick.getRawAxis(3) - stick.getRawAxis(2);
+
+		if (autoIntake == true) {
+			intake.set(-intakeSpeed);
+			autoIntakeTimer++;
+			if (intakeBumper.get() == false && autoIntakeTimer < maxIntakeTime - extraIntake) {
+				autoIntakeTimer = maxIntakeTime - extraIntake;
+			}
+
+			if (autoIntakeTimer > maxIntakeTime || (buttonBack && !buttonBackLast) || buttonLB || buttonRB) {
+				autoIntake = false;
+				intake.set(0);
+			}
+		} else if (buttonBack && !buttonBackLast) {
+			autoIntake = true;
+			autoIntakeTimer = 0;
 		}
-    	if(buttonRB)
-    	{
-    		intake.set(-intakeSpeed);
-    	}else if (buttonLB)
-    	{
-    		intake.set(intakeSpeed);
-    	}else if (!autoIntake)
-    	{
-    		intake.set(0);
-    	}
-		if (buttonX == true && buttonB == false
-				&& buttonY == false) {
+		if (buttonRB) {
+			intake.set(-intakeSpeed);
+		} else if (buttonLB) {
+			intake.set(intakeSpeed);
+		} else if (!autoIntake) {
+			intake.set(0);
+		}
+		if (buttonX == true && buttonB == false && buttonY == false) {
 			// flySpeed = 4000;//The motor doesn't reach 4000 RPM
 			flySpeed = 1.0;
-		} else if (buttonY == true
-				&& buttonB == false
-				&& buttonX == false) {
+		} else if (buttonY == true && buttonB == false && buttonX == false) {
 			// flySpeed = 1200; //Maxs out at 1200 RPM
 			flySpeed = 0.8;
-		} else if (buttonB == true
-				&& buttonX == false
-				&& buttonY == false) {
+		} else if (buttonB == true && buttonX == false && buttonY == false) {
 			// flySpeed = 600;
 			flySpeed = 0.6;
 		}
@@ -175,17 +151,8 @@ public class Robot extends IterativeRobot {
 		if (flyToggle == 1) {
 			flyWheel.set(flySpeed); // flyWheel Speed is changed here
 			// This is 1.0 because we tested it at this value and nothing f*cked
-			// up -C. Zheng 2016-1-28
-			// Changed to -1.0 because it was reversed. -C. Zheng 2016-1-29
-			// Now sets the Talon SRX to the set speed
 		} else
 			flyWheel.set(0);
-		// flywheel stops
-		// intakeSpeed = (intakeSpeed / 2) + 0.5;
-		// armSpeed = (armSpeed / 2) + 0.5;
-		// Commented because these were based off the Trigger buttons going from
-		// -1 to 1, with -1 being the "not pressed" position. This is not the
-		// case. The triggers go from 0 to 1.
 
 		buttonBackLast = buttonBack;
 		arm.set(armSpeed / 2);
