@@ -19,12 +19,12 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 public class Robot extends IterativeRobot {
 	RobotDrive robotDrive1;
 	Joystick joystickInput1;
-	Talon flyWheel, intake, arm;
+	Talon flywheelDriver, intakeDriver, armDriver;
 	DigitalInput intakeBumper;
 	final int maxIntakeTime = 1500, extraIntake = 7;
 	double flySpeed, armSpeed, intakeSpeed = 0.5;
-	int autoLoopCounter, flyToggle, direction, autoIntakeTimer;
-	boolean buttonStartLast, buttonALast, autoIntake, buttonBackLast = false;
+	int autoLoopCounter, flywheelEnable, direction, autoIntakeTimer;
+	boolean buttonStartLast, buttonALast, autoIntakeEnable, buttonBackLast = false;
 	boolean buttonA, buttonB, buttonX, buttonY, buttonLB, buttonRB, buttonBack, buttonStart;
 	CameraServer Camera;
 	// CANTalon flyWheel;
@@ -32,9 +32,9 @@ public class Robot extends IterativeRobot {
 	public void robotInit() {
 		// This function is run when the robot is first started up and should be used for any initialization code.
 		robotDrive1 = new RobotDrive(0, 1, 2, 3);
-		flyWheel = new Talon(4);
-		intake = new Talon(5);
-		arm = new Talon(6);
+		flywheelDriver = new Talon(4);
+		intakeDriver = new Talon(5);
+		armDriver = new Talon(6);
 		joystickInput1 = new Joystick(0);
 		intakeBumper = new DigitalInput(0);
 		// flyWheel = new CANTalon(0); // Initialize the CanTalonSRX on device
@@ -65,11 +65,11 @@ public class Robot extends IterativeRobot {
 
 	public void teleopInit() { 
 		// This function is called once each time the robot enters tele-operated mode
-		flyToggle = 0;
+		flywheelEnable = 0;
 		flySpeed = 0.8;
 		direction = 1;
 		buttonALast = false;
-		autoIntake = false;
+		autoIntakeEnable = false;
 		Camera = CameraServer.getInstance();
 		Camera.setQuality(50);
 		Camera.startAutomaticCapture("cam0");
@@ -88,27 +88,34 @@ public class Robot extends IterativeRobot {
 
 		armSpeed = joystickInput1.getRawAxis(3) - joystickInput1.getRawAxis(2);
 
-		if (autoIntake == true) {
-			intake.set(-intakeSpeed);
+		if (autoIntakeEnable == true) {
+			intakeDriver.set(-intakeSpeed);
 			autoIntakeTimer++;
 			if (intakeBumper.get() == false && autoIntakeTimer < maxIntakeTime - extraIntake) {
+				// Bumper has been pressed
+				
+				// Set the autoIntakeTimer to maximum time (minus the extra run time to get ball off the ground)
 				autoIntakeTimer = maxIntakeTime - extraIntake;
+				
+				// Enable flywheel
+				flywheelEnable = 1;
 			}
 
 			if (autoIntakeTimer > maxIntakeTime || (buttonBack && !buttonBackLast) || buttonLB || buttonRB) {
-				autoIntake = false;
-				intake.set(0);
+				autoIntakeEnable = false;
+				intakeDriver.set(0);
 			}
 		} else if (buttonBack && !buttonBackLast) {
-			autoIntake = true;
+			autoIntakeEnable = true;
 			autoIntakeTimer = 0;
 		}
+		
 		if (buttonRB) {
-			intake.set(-intakeSpeed);
+			intakeDriver.set(-intakeSpeed);
 		} else if (buttonLB) {
-			intake.set(intakeSpeed);
-		} else if (!autoIntake) {
-			intake.set(0);
+			intakeDriver.set(intakeSpeed);
+		} else if (!autoIntakeEnable) {
+			intakeDriver.set(0);
 		}
 
 		if (buttonX == true && buttonB == false && buttonY == false) {
@@ -126,20 +133,22 @@ public class Robot extends IterativeRobot {
 			// Enables Toggling of Flywheel
 			buttonALast = buttonA;
 			if (buttonALast == true)
-				flyToggle = (flyToggle + 1) % 2; // Toggles Flywheel between 0 and 1
+				flywheelEnable = (flywheelEnable + 1) % 2; // Toggles Flywheel between 0 and 1
 		}
+		
 		if (buttonStartLast != buttonStart) {
 			buttonStartLast = buttonStart;
 			if (buttonStartLast == true)
 				direction = -direction; 
 		}
-		if (flyToggle == 1) {
-			flyWheel.set(flySpeed);
+		
+		if (flywheelEnable == 1) {
+			flywheelDriver.set(flySpeed);
 		} else
-			flyWheel.set(0);
+			flywheelDriver.set(0);
 
 		buttonBackLast = buttonBack;
-		arm.set(armSpeed / 2);
+		armDriver.set(armSpeed / 2);
 		
 		robotDrive1.arcadeDrive(direction * joystickInput1.getRawAxis(1), -joystickInput1.getRawAxis(4));
 	}
