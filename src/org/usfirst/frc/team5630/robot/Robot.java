@@ -17,8 +17,8 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
  * directory.
  */
 public class Robot extends IterativeRobot {
-	RobotDrive myRobot;
-	Joystick stick;
+	RobotDrive robotDrive1;
+	Joystick joystickInput1;
 	Talon flyWheel, intake, arm;
 	DigitalInput intakeBumper;
 	final int maxIntakeTime = 1500, extraIntake = 7;
@@ -29,16 +29,13 @@ public class Robot extends IterativeRobot {
 	CameraServer Camera;
 	// CANTalon flyWheel;
 
-	/**
-	 * This function is run when the robot is first started up and should be
-	 * used for any initialization code.
-	 */
 	public void robotInit() {
-		myRobot = new RobotDrive(0, 1, 2, 3);
+		// This function is run when the robot is first started up and should be used for any initialization code.
+		robotDrive1 = new RobotDrive(0, 1, 2, 3);
 		flyWheel = new Talon(4);
 		intake = new Talon(5);
 		arm = new Talon(6);
-		stick = new Joystick(0);
+		joystickInput1 = new Joystick(0);
 		intakeBumper = new DigitalInput(0);
 		// flyWheel = new CANTalon(0); // Initialize the CanTalonSRX on device
 		// 1.
@@ -57,24 +54,17 @@ public class Robot extends IterativeRobot {
 		// Basically copy-pasta'd the code from an example code.
 	}
 
-	/**
-	 * This function is run once each time the robot enters autonomous mode
-	 */
 	public void autonomousInit() {
+		// This function is run once each time the robot enters autonomous mode
 		autoLoopCounter = 0;
 	}
 
-	/**
-	 * This function is called periodically during autonomous
-	 */
 	public void autonomousPeriodic() {
+		// This function is called periodically during autonomous
 	}
 
-	/**
-	 * This function is called once each time the robot enters tele-operated
-	 * mode
-	 */
-	public void teleopInit() {
+	public void teleopInit() { 
+		// This function is called once each time the robot enters tele-operated mode
 		flyToggle = 0;
 		flySpeed = 0.8;
 		direction = 1;
@@ -85,20 +75,18 @@ public class Robot extends IterativeRobot {
 		Camera.startAutomaticCapture("cam0");
 	}
 
-	/**
-	 * This function is called periodically during operator control
-	 */
 	public void teleopPeriodic() {
-		buttonA = stick.getRawButton(1);
-		buttonB = stick.getRawButton(2);
-		buttonX = stick.getRawButton(3);
-		buttonY = stick.getRawButton(4);
-		buttonLB = stick.getRawButton(5);
-		buttonRB = stick.getRawButton(6);
-		buttonBack = stick.getRawButton(7);
-		buttonStart = stick.getRawButton(8);
+		// This function is called periodically during operator control
+		buttonA = joystickInput1.getRawButton(1);
+		buttonB = joystickInput1.getRawButton(2);
+		buttonX = joystickInput1.getRawButton(3);
+		buttonY = joystickInput1.getRawButton(4);
+		buttonLB = joystickInput1.getRawButton(5);
+		buttonRB = joystickInput1.getRawButton(6);
+		buttonBack = joystickInput1.getRawButton(7);
+		buttonStart = joystickInput1.getRawButton(8);
 
-		armSpeed = stick.getRawAxis(3) - stick.getRawAxis(2);
+		armSpeed = joystickInput1.getRawAxis(3) - joystickInput1.getRawAxis(2);
 
 		if (autoIntake == true) {
 			intake.set(-intakeSpeed);
@@ -124,7 +112,7 @@ public class Robot extends IterativeRobot {
 		}
 
 		if (buttonX == true && buttonB == false && buttonY == false) {
-			// flySpeed = 4000;//The motor doesn't reach 4000 RPM
+			// flySpeed = 4000; //The motor doesn't reach 4000 RPM
 			flySpeed = 1.0;
 		} else if (buttonY == true && buttonB == false && buttonX == false) {
 			// flySpeed = 1200; //Maxs out at 1200 RPM
@@ -134,38 +122,30 @@ public class Robot extends IterativeRobot {
 			flySpeed = 0.6;
 		}
 
-		if (buttonALast != buttonA) { // Enables Toggling
+		if (buttonALast != buttonA) { 
+			// Enables Toggling of Flywheel
 			buttonALast = buttonA;
 			if (buttonALast == true)
-				flyToggle = (flyToggle + 1) % 2; // If the counter is 0, it
-													// becomes 1, if the counter
-													// is 1, it becomes 0 -C.
-													// Zheng 2016-1-28
+				flyToggle = (flyToggle + 1) % 2; // Toggles Flywheel between 0 and 1
 		}
 		if (buttonStartLast != buttonStart) {
 			buttonStartLast = buttonStart;
 			if (buttonStartLast == true)
-				direction = -direction; // If the counter is 0, it becomes 1, if
-										// the counter is 1, it becomes 0 -C.
-										// Zheng 2016-1-28
+				direction = -direction; 
 		}
 		if (flyToggle == 1) {
-			flyWheel.set(flySpeed); // flyWheel Speed is changed here
-			// This is 1.0 because we tested it at this value and nothing f*cked
+			flyWheel.set(flySpeed);
 		} else
 			flyWheel.set(0);
 
 		buttonBackLast = buttonBack;
 		arm.set(armSpeed / 2);
 		
-		//myRobot.arcadeDrive(direction * stick.getY(), -stick.getX()); One Joystick Drive
-		myRobot.arcadeDrive(direction * stick.getRawAxis(1), -1 * stick.getRawAxis(4));
+		robotDrive1.arcadeDrive(direction * joystickInput1.getRawAxis(1), -joystickInput1.getRawAxis(4));
 	}
 
-	/**
-	 * This function is called periodically during test mode
-	 */
-	public void testPeriodic() {
+	public void testPeriodic() { 
+		// This function is called periodically during test mode
 		LiveWindow.run();
 	}
 
