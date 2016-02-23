@@ -99,7 +99,7 @@ public class Robot extends IterativeRobot {
 				autoIntakeTimer = maxIntakeTime - extraIntake;
 				
 				// Enable flywheel
-				if (autoEnabelFlywheel)
+				if (autoEnableFlywheel)
 					flywheelEnable = 1;
 			}
 
