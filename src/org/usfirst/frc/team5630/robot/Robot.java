@@ -26,6 +26,7 @@ public class Robot extends IterativeRobot {
 	int autoLoopCounter, flywheelEnable, direction, autoIntakeTimer;
 	boolean buttonStartLast, buttonALast, autoIntakeEnable, buttonBackLast = false;
 	boolean buttonA, buttonB, buttonX, buttonY, buttonLB, buttonRB, buttonBack, buttonStart;
+	boolean autoEnableFlywheel = false; // Set options for features
 	CameraServer Camera;
 	// CANTalon flyWheel;
 
@@ -98,7 +99,8 @@ public class Robot extends IterativeRobot {
 				autoIntakeTimer = maxIntakeTime - extraIntake;
 				
 				// Enable flywheel
-				flywheelEnable = 1;
+				if (autoEnabelFlywheel)
+					flywheelEnable = 1;
 			}
 
 			if (autoIntakeTimer > maxIntakeTime || (buttonBack && !buttonBackLast) || buttonLB || buttonRB) {
