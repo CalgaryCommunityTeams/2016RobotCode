@@ -19,7 +19,7 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 public class Robot extends IterativeRobot {
 	RobotDrive robotDrive1;
 	Joystick joystickInput1;
-	Talon flywheelDriver, intakeDriver, armDriver;
+	Talon intakeDriver, armDriver;
 	DigitalInput intakeBumper;
 	final int maxIntakeTime = 1500, extraIntake = 7;
 	double flySpeed, armSpeed, intakeSpeed = 0.5;
@@ -28,26 +28,27 @@ public class Robot extends IterativeRobot {
 	boolean buttonA, buttonB, buttonX, buttonY, buttonLB, buttonRB, buttonBack, buttonStart;
 	boolean autoEnableFlywheel = false; // Set options for features
 	CameraServer Camera;
-	// CANTalon flyWheel;
+	CANTalon flyWheel;
 
 	public void robotInit() {
 		// This function is run when the robot is first started up and should be used for any initialization code.
 		robotDrive1 = new RobotDrive(0, 1, 2, 3);
-		flywheelDriver = new Talon(4);
+		//flywheelDriver = new Talon(4);
 		intakeDriver = new Talon(5);
 		armDriver = new Talon(6);
 		joystickInput1 = new Joystick(0);
 		intakeBumper = new DigitalInput(0);
-		// flyWheel = new CANTalon(0); // Initialize the CanTalonSRX on device
-		// 1.
-		// flyWheel.setFeedbackDevice(CANTalon.FeedbackDevice.CtreMagEncoder_Relative);
-		// flyWheel.changeControlMode(CANTalon.TalonControlMode.Speed);
-		// flyWheel.reverseSensor(false);
-		// flyWheel.configNominalOutputVoltage(+0.0f, -0.0f);
-		// flyWheel.configPeakOutputVoltage(+12.0f, -0.0f);
-		// flyWheel.setProfile(0);
-		// flyWheel.setPID(0.22, 0.0, 0.0);
-		// flyWheel.setF(0.1097);
+		flyWheel = new CANTalon(0); // Initialize the CanTalonSRX on device
+		//1.
+		 flyWheel.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+		 flyWheel.changeControlMode(CANTalon.TalonControlMode.Speed);
+		 flyWheel.configEncoderCodesPerRev(1024);
+		 flyWheel.reverseSensor(false);
+		 flyWheel.configNominalOutputVoltage(+0.0f, -0.0f);
+		 flyWheel.configPeakOutputVoltage(+12.0f, -0.0f);
+		 flyWheel.setProfile(0);
+		 flyWheel.setPID(0.22, 0.0, 0.0);
+		 flyWheel.setF(0.1097);
 
 		// the camera name (ex "cam0") can be found through the roboRIO web
 		// interface
@@ -121,14 +122,14 @@ public class Robot extends IterativeRobot {
 		}
 
 		if (buttonX == true && buttonB == false && buttonY == false) {
-			// flySpeed = 4000; //The motor doesn't reach 4000 RPM
-			flySpeed = 1.0;
+			flySpeed = 4000; //The motor doesn't reach 4000 RPM
+			//flySpeed = 1.0;
 		} else if (buttonY == true && buttonB == false && buttonX == false) {
-			// flySpeed = 1200; //Maxs out at 1200 RPM
-			flySpeed = 0.8;
+			flySpeed = 1200; //Maxs out at 1200 RPM
+			//flySpeed = 0.8;
 		} else if (buttonB == true && buttonX == false && buttonY == false) {
-			// flySpeed = 600;
-			flySpeed = 0.6;
+			flySpeed = 600;
+			//flySpeed = 0.6;
 		}
 
 		if (buttonALast != buttonA) { 
@@ -145,9 +146,9 @@ public class Robot extends IterativeRobot {
 		}
 		
 		if (flywheelEnable == 1) {
-			flywheelDriver.set(flySpeed);
+			flyWheel.set(flySpeed);
 		} else
-			flywheelDriver.set(0);
+			flyWheel.set(0);
 
 		buttonBackLast = buttonBack;
 		armDriver.set(armSpeed / 2);
