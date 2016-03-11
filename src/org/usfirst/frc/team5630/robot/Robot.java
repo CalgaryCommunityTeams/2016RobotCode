@@ -38,7 +38,7 @@ public class Robot extends IterativeRobot {
 		// used for any initialization code.
 		robotDrive1 = new RobotDrive(0, 1, 2, 3);
 		// flywheelDriver = new Talon(4);
-		intakeDriver = new Talon(5);
+		intakeDriver = new Talon(4);
 		// armDriver = new Talon(6);
 		joystickInput1 = new Joystick(0);
 		intakeBumper = new DigitalInput(0);
@@ -68,8 +68,9 @@ public class Robot extends IterativeRobot {
 		arm.setProfile(0);
 		arm.setPID(0.22, 0.0017, 0.00003);
 		arm.setReverseSoftLimit(reverseLimit);
+		arm.enableReverseSoftLimit(true);
 		arm.setForwardSoftLimit(forwardLimit);
-
+		arm.enableForwardSoftLimit(true);
 		// the camera name (ex "cam0") can be found through the roboRIO web
 		// interface
 
