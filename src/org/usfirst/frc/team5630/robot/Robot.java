@@ -24,14 +24,17 @@ public class Robot extends IterativeRobot {
 	final int maxIntakeTime = 1500, extraIntake = 0;
 	double flySpeed, armTargetPosition, armSpeed, intakeSpeed = 1;
 	int autoLoopCounter, flywheelEnable, direction, autoIntakeTimer;
-	boolean buttonStartLast, buttonALast, autoIntakeEnable, buttonBackLast = false;
+	boolean autoIntakeEnable;
 	boolean buttonA, buttonB, buttonX, buttonY, buttonLB, buttonRB, buttonBack, buttonStart;
+	boolean buttonALast, buttonBLast, buttonXLast, buttonYLast, buttonLBLast, buttonRBLast, buttonBackLast,
+			buttonStartLast;
 	int buttonPOV;
+	int buttonPOVLast;
 	boolean autoEnableFlywheel = false; // Set options for features
 	CameraServer Camera;
 	CANTalon flyWheel, arm;
-	double reverseLimit = -0.34;
-	double forwardLimit = 0.00;
+	double reverseLimit = -0.8;
+	double forwardLimit = -0.435;
 
 	public void robotInit() {
 		// This function is run when the robot is first started up and should be
@@ -44,38 +47,37 @@ public class Robot extends IterativeRobot {
 		intakeBumper = new DigitalInput(0);
 		flyWheel = new CANTalon(1); // Initialize the CanTalonSRX on device
 		// 1.
-		
+
 		flyWheel.reset();
 		flyWheel.enable();
 		flyWheel.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
 		flyWheel.changeControlMode(CANTalon.TalonControlMode.Speed);
 		flyWheel.configEncoderCodesPerRev(1024);
-		flyWheel.reverseSensor(true);
-		flyWheel.reverseOutput(false);
+		flyWheel.reverseSensor(false);
+		flyWheel.reverseOutput(true);
 		flyWheel.configNominalOutputVoltage(+0.0f, -0.0f);
-		flyWheel.configPeakOutputVoltage(+12.0f, 0.0f);
+		flyWheel.configPeakOutputVoltage(0.0f, -12.0f);
 		flyWheel.setProfile(0);
-		flyWheel.setPID(0.35, 0.001, 0.0001);
-		flyWheel.setIZone(6000);
+		flyWheel.setPID(0.31, 0.0004, 0.0000);
+		flyWheel.setIZone(5000);
 		flyWheel.setF(0.0);
 
 		arm = new CANTalon(2); // Initialize the CanTalonSRX on device
-		arm.setEncPosition(arm.getPulseWidthPosition() & 0xFFF);
-		arm.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+		// arm.setEncPosition(arm.getPulseWidthPosition() & 0xFFF);
+		arm.setFeedbackDevice(CANTalon.FeedbackDevice.CtreMagEncoder_Absolute);
 		arm.configEncoderCodesPerRev(1024);
-		arm.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-		arm.reverseOutput(true);
+		arm.changeControlMode(CANTalon.TalonControlMode.Position);
+		arm.reverseOutput(false);
 		arm.reverseSensor(true);
 		arm.configNominalOutputVoltage(+0.0f, -0.0f);
 		arm.configPeakOutputVoltage(12.0f, -12.0f);
 		arm.setAllowableClosedLoopErr(0);
 		arm.setProfile(0);
-		arm.setPID(0.22, 0.0017, 0.00003);
+		arm.setPID(2, 0.00001, 0.00003);
 		arm.setReverseSoftLimit(reverseLimit);
-		arm.enableReverseSoftLimit(false);
+		arm.enableReverseSoftLimit(true);
 		arm.setForwardSoftLimit(forwardLimit);
-		arm.enableForwardSoftLimit(false);
-		
+		arm.enableForwardSoftLimit(true);
 		flyWheel.set(0);
 		Camera = CameraServer.getInstance();
 		Camera.setQuality(30);
@@ -101,7 +103,7 @@ public class Robot extends IterativeRobot {
 		// This function is called once each time the robot enters tele-operated
 		// mode
 		flywheelEnable = 0;
-		flySpeed = 700;
+		flySpeed = 4600;
 		direction = 1;
 		buttonALast = false;
 		autoIntakeEnable = false;
@@ -120,7 +122,7 @@ public class Robot extends IterativeRobot {
 		buttonBack = joystickInput1.getRawButton(7);
 		buttonStart = joystickInput1.getRawButton(8);
 		buttonPOV = joystickInput1.getPOV();
-//		armTargetPosition = armTargetPosition + (joystickInput1.getRawAxis(3)- joystickInput1.getRawAxis(2)) / 150;
+		armTargetPosition = arm.getPosition() + (joystickInput1.getRawAxis(3) - joystickInput1.getRawAxis(2)) / 10;
 		armSpeed = joystickInput1.getRawAxis(3) - joystickInput1.getRawAxis(2);
 		if (autoIntakeEnable == true) {
 			intakeDriver.set(-intakeSpeed);
@@ -154,25 +156,34 @@ public class Robot extends IterativeRobot {
 			intakeDriver.set(0);
 		}
 
-		if (buttonX) {
-			flySpeed = 4700;
+		if (!buttonXLast && buttonX && flySpeed > 0) {
+			flySpeed = flySpeed-50;
 		} else if (buttonY) {
-			flySpeed = 2500;
-		} else if (buttonB) {
-			flySpeed = 2000;
+			flySpeed = 4600;
+		} else if (!buttonBLast && buttonB && flySpeed < 5500) {
+			flySpeed = flySpeed+50;
 		}
-		if (buttonPOV == 0 && flySpeed < 5500)
-		{
-			flySpeed = flySpeed+5;
-		}else if(buttonPOV == 180 && flySpeed > 0)
-		{
-			flySpeed = flySpeed-5;
+
+		if (buttonPOV == 0) {
+			arm.set(forwardLimit);
+		} else if (buttonPOV == 180) {
+			arm.set(reverseLimit);
+		} else if (Math.abs(armSpeed) > 0.00000001) {
+			arm.set(armTargetPosition);
 		}
+
+//		if (buttonPOV == 90 && buttonPOVLast != buttonPOV) {
+//			arm.setP(arm.getP() + 0.01);
+//		} else if (buttonPOV == 270 && buttonPOVLast != buttonPOV) {
+//			arm.setP(arm.getP() - 0.01);
+//		}
 		if (buttonALast != buttonA) {
 			// Enables Toggling of Flywheel
 			buttonALast = buttonA;
 			if (buttonALast == true)
-				flywheelEnable = (flywheelEnable + 1) % 2; // Toggles Flywheel												// between 0 and 1
+				flywheelEnable = (flywheelEnable + 1) % 2; // Toggles Flywheel
+															// // between 0 and
+															// 1
 		}
 		if (buttonStartLast != buttonStart) {
 			buttonStartLast = buttonStart;
@@ -180,24 +191,34 @@ public class Robot extends IterativeRobot {
 				direction = -direction;
 		}
 
-		
 		if (flywheelEnable == 1) {
 			flyWheel.changeControlMode(CANTalon.TalonControlMode.Speed);
 			flyWheel.set(flySpeed);
-		} else
-		{
+		} else {
 			flyWheel.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 			flyWheel.set(0);
 		}
 
-		buttonBackLast = buttonBack;
-//		arm.set(armTargetPosition);
-		arm.set(armSpeed / Math.sqrt(Math.abs(armSpeed))/2);
+		// arm.set(armTargetPosition);
+
 		robotDrive1.arcadeDrive(direction * joystickInput1.getRawAxis(1), -joystickInput1.getRawAxis(4));
+
 		if (outputCounter == 0) {
-			System.out.println(
-					"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nArm Position:   " + arm.getPosition() + "\nTargetFlySpeed:" + flySpeed + "\nWheel Speed:   " + flyWheel.getSpeed()+"\nError:" + flyWheel.getError() + "\tAccumulated:" + flyWheel.GetIaccum() + "\nPOV:" + buttonPOV);
+			System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\tArm Position:   "
+					+ arm.getPosition() + "Arm TargetPos:" + (arm.getPulseWidthPosition() & 0xFFF) + "\nTargetFlySpeed:"
+					+ flySpeed + "\nWheel Speed:   " + flyWheel.getSpeed() + "\nError:" + flyWheel.getError()
+					+ "\tAccumulated:" + flyWheel.GetIaccum() + "\nArm P:" + arm.getP() + "\n" + arm.getControlMode());
 		}
+		buttonALast = buttonA;
+		buttonBLast = buttonB;
+		buttonXLast = buttonX;
+		buttonYLast = buttonY;
+		buttonLBLast = buttonLB;
+		buttonRBLast = buttonRB;
+		buttonBackLast = buttonBack;
+		buttonStartLast = buttonStart;
+		buttonPOVLast = buttonPOV;
+
 	}
 
 	public void testPeriodic() {
