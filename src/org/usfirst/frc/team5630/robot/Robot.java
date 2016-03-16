@@ -30,8 +30,8 @@ public class Robot extends IterativeRobot {
 	boolean autoEnableFlywheel = false; // Set options for features
 	CameraServer Camera;
 	CANTalon flyWheel, arm;
-	double reverseLimit = -0.01625;
-	double forwardLimit = -0.30;
+	double reverseLimit = -0.34;
+	double forwardLimit = 0.00;
 
 	public void robotInit() {
 		// This function is run when the robot is first started up and should be
@@ -44,33 +44,42 @@ public class Robot extends IterativeRobot {
 		intakeBumper = new DigitalInput(0);
 		flyWheel = new CANTalon(1); // Initialize the CanTalonSRX on device
 		// 1.
-		flyWheel.setFeedbackDevice(CANTalon.FeedbackDevice.CtreMagEncoder_Relative);
+		
+		flyWheel.reset();
+		flyWheel.enable();
+		flyWheel.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
 		flyWheel.changeControlMode(CANTalon.TalonControlMode.Speed);
-		//flyWheel.configEncoderCodesPerRev(1024);
-		flyWheel.reverseSensor(false);
-		flyWheel.reverseOutput(true);
+		flyWheel.configEncoderCodesPerRev(1024);
+		flyWheel.reverseSensor(true);
+		flyWheel.reverseOutput(false);
 		flyWheel.configNominalOutputVoltage(+0.0f, -0.0f);
 		flyWheel.configPeakOutputVoltage(+12.0f, 0.0f);
 		flyWheel.setProfile(0);
-		flyWheel.setPID(0.32, 0.0000, 0.0);
-		flyWheel.setF(0.1097);
+		flyWheel.setPID(0.35, 0.001, 0.0001);
+		flyWheel.setIZone(6000);
+		flyWheel.setF(0.0);
 
 		arm = new CANTalon(2); // Initialize the CanTalonSRX on device
 		arm.setEncPosition(arm.getPulseWidthPosition() & 0xFFF);
 		arm.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
 		arm.configEncoderCodesPerRev(1024);
 		arm.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-		arm.reverseSensor(false);
 		arm.reverseOutput(true);
+		arm.reverseSensor(true);
 		arm.configNominalOutputVoltage(+0.0f, -0.0f);
-		arm.configPeakOutputVoltage(+12.0f, -12.0f);
+		arm.configPeakOutputVoltage(12.0f, -12.0f);
 		arm.setAllowableClosedLoopErr(0);
 		arm.setProfile(0);
 		arm.setPID(0.22, 0.0017, 0.00003);
 		arm.setReverseSoftLimit(reverseLimit);
-		arm.enableReverseSoftLimit(true);
+		arm.enableReverseSoftLimit(false);
 		arm.setForwardSoftLimit(forwardLimit);
-		arm.enableForwardSoftLimit(true);
+		arm.enableForwardSoftLimit(false);
+		
+		flyWheel.set(0);
+		Camera = CameraServer.getInstance();
+		Camera.setQuality(30);
+		Camera.startAutomaticCapture("cam0");
 		// the camera name (ex "cam0") can be found through the roboRIO web
 		// interface
 
@@ -96,15 +105,12 @@ public class Robot extends IterativeRobot {
 		direction = 1;
 		buttonALast = false;
 		autoIntakeEnable = false;
-		Camera = CameraServer.getInstance();
-		Camera.setQuality(30);
-		Camera.startAutomaticCapture("cam0");
 		outputCounter = 0;
 	}
 
 	public void teleopPeriodic() {
 		// This function is called periodically during operator control
-		outputCounter = (outputCounter + 1) % 25;
+		outputCounter = (outputCounter + 1) % 10;
 		buttonA = joystickInput1.getRawButton(1);
 		buttonB = joystickInput1.getRawButton(2);
 		buttonX = joystickInput1.getRawButton(3);
@@ -148,26 +154,26 @@ public class Robot extends IterativeRobot {
 			intakeDriver.set(0);
 		}
 
-		if (buttonX == true && buttonB == false && buttonY == false) {
-			flySpeed = 800; // The motor doesn't reach 4000 RPM
-			// flySpeed = 1.0;
-		} else if (buttonY == true && buttonB == false && buttonX == false) {
-			flySpeed = 590; // Maxs out at 1200 RPM
-			// flySpeed = 0.8;
-		} else if (buttonB == true && buttonX == false && buttonY == false) {
-			flySpeed = 575;
-			// flySpeed = 0.6;
+		if (buttonX) {
+			flySpeed = 4700;
+		} else if (buttonY) {
+			flySpeed = 2500;
+		} else if (buttonB) {
+			flySpeed = 2000;
 		}
-
+		if (buttonPOV == 0 && flySpeed < 5500)
+		{
+			flySpeed = flySpeed+5;
+		}else if(buttonPOV == 180 && flySpeed > 0)
+		{
+			flySpeed = flySpeed-5;
+		}
 		if (buttonALast != buttonA) {
 			// Enables Toggling of Flywheel
 			buttonALast = buttonA;
 			if (buttonALast == true)
-				flywheelEnable = (flywheelEnable + 1) % 2; // Toggles Flywheel
-			System.out.println("FlyWheelEnable" + flywheelEnable);												// between 0 and 1
-			
+				flywheelEnable = (flywheelEnable + 1) % 2; // Toggles Flywheel												// between 0 and 1
 		}
-
 		if (buttonStartLast != buttonStart) {
 			buttonStartLast = buttonStart;
 			if (buttonStartLast == true)
@@ -176,10 +182,11 @@ public class Robot extends IterativeRobot {
 
 		
 		if (flywheelEnable == 1) {
+			flyWheel.changeControlMode(CANTalon.TalonControlMode.Speed);
 			flyWheel.set(flySpeed);
 		} else
 		{
-			flyWheel.clearIAccum();
+			flyWheel.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 			flyWheel.set(0);
 		}
 
@@ -189,8 +196,7 @@ public class Robot extends IterativeRobot {
 		robotDrive1.arcadeDrive(direction * joystickInput1.getRawAxis(1), -joystickInput1.getRawAxis(4));
 		if (outputCounter == 0) {
 			System.out.println(
-					"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nArm Position:   " + arm.getPosition());
-			System.out.println("Wheel Speed:   " + flyWheel.getEncVelocity());
+					"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nArm Position:   " + arm.getPosition() + "\nTargetFlySpeed:" + flySpeed + "\nWheel Speed:   " + flyWheel.getSpeed()+"\nError:" + flyWheel.getError() + "\tAccumulated:" + flyWheel.GetIaccum() + "\nPOV:" + buttonPOV);
 		}
 	}
 
