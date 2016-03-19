@@ -30,6 +30,7 @@ public class Robot extends IterativeRobot {
 			buttonStartLast;
 	int buttonPOV;
 	int buttonPOVLast;
+	int shootTimer = 0;
 	boolean autoEnableFlywheel = false; // Set options for features
 	CameraServer Camera;
 	CANTalon flyWheel, arm;
@@ -56,9 +57,9 @@ public class Robot extends IterativeRobot {
 		flyWheel.reverseSensor(false);
 		flyWheel.reverseOutput(true);
 		flyWheel.configNominalOutputVoltage(+0.0f, -0.0f);
-		flyWheel.configPeakOutputVoltage(0.0f, -12.0f);
+		flyWheel.configPeakOutputVoltage(0.0f, -13.0f);
 		flyWheel.setProfile(0);
-		flyWheel.setPID(0.31, 0.0004, 0.0000);
+		flyWheel.setPID(0.31, 0.0006, 0.0000);
 		flyWheel.setIZone(5000);
 		flyWheel.setF(0.0);
 
@@ -103,7 +104,7 @@ public class Robot extends IterativeRobot {
 		// This function is called once each time the robot enters tele-operated
 		// mode
 		flywheelEnable = 0;
-		flySpeed = 4600;
+		flySpeed = 4500;
 		direction = 1;
 		buttonALast = false;
 		autoIntakeEnable = false;
@@ -158,17 +159,18 @@ public class Robot extends IterativeRobot {
 
 		if (!buttonXLast && buttonX && flySpeed > 0) {
 			flySpeed = flySpeed-50;
-		} else if (buttonY) {
-			flySpeed = 4600;
 		} else if (!buttonBLast && buttonB && flySpeed < 5500) {
 			flySpeed = flySpeed+50;
 		}
 
+
+		
+		
 		if (buttonPOV == 0) {
 			arm.set(forwardLimit);
 		} else if (buttonPOV == 180) {
 			arm.set(reverseLimit);
-		} else if (Math.abs(armSpeed) > 0.00000001) {
+		} else if (Math.abs(armSpeed) > 0.1) {
 			arm.set(armTargetPosition);
 		}
 
@@ -198,16 +200,32 @@ public class Robot extends IterativeRobot {
 			flyWheel.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 			flyWheel.set(0);
 		}
+		if (buttonY && flywheelEnable == 1 && Math.abs(flyWheel.getSpeed()-flySpeed) < 2){
+			shootTimer = 75;			                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+		}
+		if (shootTimer > 1)
+		{
+			intakeDriver.set(-intakeSpeed);
+			shootTimer--;
+		}else if (shootTimer == 1)
+		{
+			shootTimer--;
+			flywheelEnable = 0;
+		}
 
 		// arm.set(armTargetPosition);
 
 		robotDrive1.arcadeDrive(direction * joystickInput1.getRawAxis(1), -joystickInput1.getRawAxis(4));
 
-		if (outputCounter == 0) {
-			System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\tArm Position:   "
-					+ arm.getPosition() + "Arm TargetPos:" + (arm.getPulseWidthPosition() & 0xFFF) + "\nTargetFlySpeed:"
-					+ flySpeed + "\nWheel Speed:   " + flyWheel.getSpeed() + "\nError:" + flyWheel.getError()
-					+ "\tAccumulated:" + flyWheel.GetIaccum() + "\nArm P:" + arm.getP() + "\n" + arm.getControlMode());
+		if (outputCounter == 0){
+			if(Math.abs(flyWheel.getSpeed()-flySpeed) < 10) {
+			System.out.println("\n\n\n\n\n\nYOU'RE GOOD TO SHOOT\nYOU'RE GOOD TO SHOOT\n\n\tArm Position:   "
+					+ arm.getPosition() + "\tArm TargetPos:" + (arm.getPulseWidthPosition() & 0xFFF) + "\n\nTargetFlySpeed:"
+					+ flySpeed + "\nWheel Speed:   " + flyWheel.getSpeed());
+		}else 
+			System.out.println("\n\n\n\n\n\n\n\n\n\tArm Position:   "
+					+ arm.getPosition() +"\n\nTargetFlySpeed:"
+					+ flySpeed + "\nWheel Speed:   " + flyWheel.getSpeed());
 		}
 		buttonALast = buttonA;
 		buttonBLast = buttonB;
