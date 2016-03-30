@@ -96,6 +96,21 @@ public class Robot extends IterativeRobot {
 
 	public void autonomousPeriodic() {
 		// This function is called periodically during autonomous
+		if (autoLoopCounter < 80)
+		{
+			arm.set(-0.65);
+			robotDrive1.arcadeDrive(0.7, 0);
+		}else if (autoLoopCounter < 140)
+		{
+			robotDrive1.arcadeDrive(0.8, 0);
+		}else if (autoLoopCounter < 180)
+		{
+			robotDrive1.arcadeDrive(0.2, 0);
+		}
+		System.out.println(autoLoopCounter);
+		
+		
+		autoLoopCounter++;
 	}
 
 	int outputCounter;
@@ -201,7 +216,7 @@ public class Robot extends IterativeRobot {
 			flyWheel.set(0);
 		}
 		if (buttonY && flywheelEnable == 1 && Math.abs(flyWheel.getSpeed()-flySpeed) < 2){
-			shootTimer = 75;			                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+			shootTimer = 40;			                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
 		}
 		if (shootTimer > 1)
 		{
