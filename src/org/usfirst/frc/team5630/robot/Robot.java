@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
@@ -21,13 +22,15 @@ public class Robot extends IterativeRobot {
 	Joystick joystickInput1;
 	Talon intakeDriver;
 	DigitalInput intakeBumper;
+	Relay spike;
+	boolean lightToggle; // For turning on and off light (Robert)
 	final int maxIntakeTime = 1500, extraIntake = 0;
 	double flySpeed, armTargetPosition, armSpeed, intakeSpeed = 1;
 	int autoLoopCounter, flywheelEnable, direction, autoIntakeTimer;
 	boolean autoIntakeEnable;
 	boolean buttonA, buttonB, buttonX, buttonY, buttonLB, buttonRB, buttonBack, buttonStart;
 	boolean buttonALast, buttonBLast, buttonXLast, buttonYLast, buttonLBLast, buttonRBLast, buttonBackLast,
-			buttonStartLast;
+			buttonStartLast, buttonTest;
 	int buttonPOV;
 	int buttonPOVLast;
 	int shootTimer = 0;
@@ -48,6 +51,11 @@ public class Robot extends IterativeRobot {
 		intakeBumper = new DigitalInput(0);
 		flyWheel = new CANTalon(1); // Initialize the CanTalonSRX on device
 		// 1.
+		
+		spike = new Relay(0); //Initializes spike relay
+		lightToggle = true;
+		//spike.set(Relay.Value.kForward); //Power flows Positive to Negative, light green
+		//spike.set(Relay.Value.kOff); //No power flows, light orange
 
 		flyWheel.reset();
 		flyWheel.enable();
@@ -137,6 +145,7 @@ public class Robot extends IterativeRobot {
 		buttonRB = joystickInput1.getRawButton(6);
 		buttonBack = joystickInput1.getRawButton(7);
 		buttonStart = joystickInput1.getRawButton(8);
+		buttonTest = joystickInput1.getRawButton(10);
 		buttonPOV = joystickInput1.getPOV();
 		armTargetPosition = arm.getPosition() + (joystickInput1.getRawAxis(3) - joystickInput1.getRawAxis(2)) / 10;
 		armSpeed = joystickInput1.getRawAxis(3) - joystickInput1.getRawAxis(2);
@@ -164,6 +173,23 @@ public class Robot extends IterativeRobot {
 			autoIntakeTimer = 0;
 		}
 
+		
+		 /*
+		Spike code
+		*/
+		if(buttonTest){
+			if(lightToggle){
+				spike.set(Relay.Value.kForward);
+				lightToggle = false;
+			}
+			else{
+				spike.set(Relay.Value.kOff);
+				lightToggle = true;
+			}
+				
+		}
+		  //Spike code for light (above)
+		
 		if (buttonRB) {
 			intakeDriver.set(-intakeSpeed);
 		} else if (buttonLB) {
