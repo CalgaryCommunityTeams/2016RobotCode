@@ -28,9 +28,9 @@ public class Robot extends IterativeRobot {
 	double flySpeed, armTargetPosition, armSpeed, intakeSpeed = 1;
 	int autoLoopCounter, flywheelEnable, direction, autoIntakeTimer;
 	boolean autoIntakeEnable;
-	boolean buttonA, buttonB, buttonX, buttonY, buttonLB, buttonRB, buttonBack, buttonStart;
+	boolean buttonA, buttonB, buttonX, buttonY, buttonLB, buttonRB, buttonBack, buttonStart, buttonRStick;
 	boolean buttonALast, buttonBLast, buttonXLast, buttonYLast, buttonLBLast, buttonRBLast, buttonBackLast,
-			buttonStartLast, buttonTest;
+			buttonStartLast, buttonRStickLast;
 	int buttonPOV;
 	int buttonPOVLast;
 	int shootTimer = 0;
@@ -145,7 +145,7 @@ public class Robot extends IterativeRobot {
 		buttonRB = joystickInput1.getRawButton(6);
 		buttonBack = joystickInput1.getRawButton(7);
 		buttonStart = joystickInput1.getRawButton(8);
-		buttonTest = joystickInput1.getRawButton(10);
+		buttonRStick = joystickInput1.getRawButton(10);
 		buttonPOV = joystickInput1.getPOV();
 		armTargetPosition = arm.getPosition() + (joystickInput1.getRawAxis(3) - joystickInput1.getRawAxis(2)) / 10;
 		armSpeed = joystickInput1.getRawAxis(3) - joystickInput1.getRawAxis(2);
@@ -177,7 +177,7 @@ public class Robot extends IterativeRobot {
 		 /*
 		Spike code
 		*/
-		if(buttonTest){
+		if(buttonRStick != buttonRStickLast && buttonRStick){
 			if(lightToggle){
 				spike.set(Relay.Value.kForward);
 				lightToggle = false;
@@ -277,6 +277,7 @@ public class Robot extends IterativeRobot {
 		buttonBackLast = buttonBack;
 		buttonStartLast = buttonStart;
 		buttonPOVLast = buttonPOV;
+		buttonRStickLast = buttonRStick;
 
 	}
 
