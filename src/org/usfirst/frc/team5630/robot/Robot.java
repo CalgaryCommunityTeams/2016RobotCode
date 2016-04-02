@@ -37,9 +37,8 @@ public class Robot extends IterativeRobot {
 	boolean autoEnableFlywheel = false; // Set options for features
 	CameraServer Camera;
 	CANTalon flyWheel, arm;
-	double forwardLimit = -0.93;
-	double reverseLimit = forwardLimit-0.363;
-
+	double forwardLimit = -0.09;
+	double reverseLimit = forwardLimit - 0.325;
 
 	public void robotInit() {
 		// This function is run when the robot is first started up and should be
@@ -52,11 +51,12 @@ public class Robot extends IterativeRobot {
 		intakeBumper = new DigitalInput(0);
 		flyWheel = new CANTalon(1); // Initialize the CanTalonSRX on device
 		// 1.
-		
-		spike = new Relay(0); //Initializes spike relay
+
+		spike = new Relay(0); // Initializes spike relay
 		lightToggle = true;
-		//spike.set(Relay.Value.kForward); //Power flows Positive to Negative, light green
-		//spike.set(Relay.Value.kOff); //No power flows, light orange
+		// spike.set(Relay.Value.kForward); //Power flows Positive to Negative,
+		// light green
+		// spike.set(Relay.Value.kOff); //No power flows, light orange
 
 		flyWheel.reset();
 		flyWheel.enable();
@@ -83,7 +83,7 @@ public class Robot extends IterativeRobot {
 		arm.configPeakOutputVoltage(12.0f, -12.0f);
 		arm.setAllowableClosedLoopErr(0);
 		arm.setProfile(0);
-		arm.setPID(2, 0.00001, 0.00003);
+		arm.setPID(2, 0.001, 0.00003);
 		arm.setReverseSoftLimit(reverseLimit);
 		arm.enableReverseSoftLimit(true);
 		arm.setForwardSoftLimit(forwardLimit);
@@ -105,21 +105,17 @@ public class Robot extends IterativeRobot {
 
 	public void autonomousPeriodic() {
 		// This function is called periodically during autonomous
-		if (autoLoopCounter < 80)
-		{
-			arm.set(forwardLimit-0.215);
-			robotDrive1.arcadeDrive(0.7, 0);
-		}else if (autoLoopCounter < 140)
-		{
-			robotDrive1.arcadeDrive(0.8, 0);
-		}else if (autoLoopCounter < 180)
-		{
-			robotDrive1.arcadeDrive(0.2, 0);
-		}
-		System.out.println(autoLoopCounter);
-		
-		
-		autoLoopCounter++;
+//		if (autoLoopCounter < 80) {
+//			arm.set(forwardLimit - 0.215);
+//			robotDrive1.arcadeDrive(0.7, 0);
+//		} else if (autoLoopCounter < 140) {
+//			robotDrive1.arcadeDrive(0.8, 0);
+//		} else if (autoLoopCounter < 180) {
+//			robotDrive1.arcadeDrive(0.2, 0);
+//		}
+//		System.out.println(autoLoopCounter);
+//
+//		autoLoopCounter++;
 	}
 
 	int outputCounter;
@@ -175,23 +171,21 @@ public class Robot extends IterativeRobot {
 			autoIntakeTimer = 0;
 		}
 
-		
-		 /*
-		Spike code
-		*/
-		if(buttonRStick != buttonRStickLast && buttonRStick){
-			if(lightToggle){
+		/*
+		 * Spike code
+		 */
+		if (buttonRStick != buttonRStickLast && buttonRStick) {
+			if (lightToggle) {
 				spike.set(Relay.Value.kForward);
 				lightToggle = false;
-			}
-			else{
+			} else {
 				spike.set(Relay.Value.kOff);
 				lightToggle = true;
 			}
-				
+
 		}
-		  //Spike code for light (above)
-		
+		// Spike code for light (above)
+
 		if (buttonRB) {
 			intakeDriver.set(-intakeSpeed);
 		} else if (buttonLB) {
@@ -201,14 +195,11 @@ public class Robot extends IterativeRobot {
 		}
 
 		if (!buttonXLast && buttonX && flySpeed > 0) {
-			flySpeed = flySpeed-50;
+			flySpeed = flySpeed - 50;
 		} else if (!buttonBLast && buttonB && flySpeed < 5500) {
-			flySpeed = flySpeed+50;
+			flySpeed = flySpeed + 50;
 		}
 
-
-		
-		
 		if (buttonPOV == 0) {
 			arm.set(forwardLimit);
 		} else if (buttonPOV == 180) {
@@ -217,11 +208,11 @@ public class Robot extends IterativeRobot {
 			arm.set(armTargetPosition);
 		}
 
-//		if (buttonPOV == 90 && buttonPOVLast != buttonPOV) {
-//			arm.setP(arm.getP() + 0.01);
-//		} else if (buttonPOV == 270 && buttonPOVLast != buttonPOV) {
-//			arm.setP(arm.getP() - 0.01);
-//		}
+		// if (buttonPOV == 90 && buttonPOVLast != buttonPOV) {
+		// arm.setP(arm.getP() + 0.01);
+		// } else if (buttonPOV == 270 && buttonPOVLast != buttonPOV) {
+		// arm.setP(arm.getP() - 0.01);
+		// }
 		if (buttonALast != buttonA) {
 			// Enables Toggling of Flywheel
 			buttonALast = buttonA;
@@ -243,27 +234,20 @@ public class Robot extends IterativeRobot {
 			flyWheel.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 			flyWheel.set(0);
 		}
-		if(flywheelEnable == 0)
-		{
-			autoShooter = false;
-		}
-		else if(buttonY != buttonYLast && buttonY)
-		{
+		if (buttonY != buttonYLast && buttonY && flywheelEnable == 1) {
 			autoShooter = true;
 		}
-		
-		if (autoShooter && Math.abs(flyWheel.getSpeed()-flySpeed) < 2){
-		{
-			shootTimer = 40;	
-			autoShooter = false;
+
+		if (autoShooter && Math.abs(flyWheel.getSpeed() - flySpeed) < 2) {
+			{
+				shootTimer = 40;
+				autoShooter = false;
+			}
 		}
-		}
-		if (shootTimer > 1)
-		{
+		if (shootTimer > 1) {
 			intakeDriver.set(-intakeSpeed);
 			shootTimer--;
-		}else if (shootTimer == 1)
-		{
+		} else if (shootTimer == 1) {
 			shootTimer--;
 			flywheelEnable = 0;
 		}
@@ -271,21 +255,22 @@ public class Robot extends IterativeRobot {
 		// arm.set(armTargetPosition);
 
 		robotDrive1.arcadeDrive(direction * joystickInput1.getRawAxis(1), -joystickInput1.getRawAxis(4));
-//		if(joystickInput1.getRawButton(10))
-//		{
-//			arm.setPosition(0);
-//			arm.setEncPosition(0);
-//			
-//		}
-		if (outputCounter == 0){
-			if(Math.abs(flyWheel.getSpeed()-flySpeed) < 10) {
-			System.out.println("\n\n\n\n\n\nYOU'RE GOOD TO SHOOT\nYOU'RE GOOD TO SHOOT\n\n\tArm Position:   "
-					+ arm.getPosition() + "\tArm TargetPos:" + (arm.getPulseWidthPosition() & 0xFFF) + "\n\nTargetFlySpeed:"
-					+ flySpeed + "\nWheel Speed:   " + flyWheel.getSpeed()+ "\nAutoshooter: " + autoShooter);
-		}else 
-			System.out.println("\n\n\n\n\n\n\n\n\n\tArm Position:   "
-					+ arm.getPosition() +"\n\nTargetFlySpeed:"
-					+ flySpeed + "\nWheel Speed:   " + flyWheel.getSpeed() + "\nAutoshooter: " + autoShooter);
+		// if(joystickInput1.getRawButton(10))
+		// {
+		// arm.setPosition(0);
+		// arm.setEncPosition(0);
+		//
+		// }
+		if (outputCounter == 0) {
+			if (Math.abs(flyWheel.getSpeed() - flySpeed) < 10) {
+				System.out.println("\n\n\n\n\n\nYOU'RE GOOD TO SHOOT\nYOU'RE GOOD TO SHOOT\n\n\tArm Position:   "
+						+ arm.getPosition() + "\tArm TargetPos:" + (arm.getPulseWidthPosition() & 0xFFF)
+						+ "\n\nTargetFlySpeed:" + flySpeed + "\nWheel Speed:   " + flyWheel.getSpeed()
+						+ "\nAutoshooter: " + autoShooter);
+			} else {
+				System.out.println("\n\n\n\n\n\n\n\n\n\tArm Position:   " + arm.getPosition() + "\n\nTargetFlySpeed:"
+						+ flySpeed + "\nWheel Speed:   " + flyWheel.getSpeed() + "\nAutoshooter: " + autoShooter);
+			}
 		}
 		buttonALast = buttonA;
 		buttonBLast = buttonB;
