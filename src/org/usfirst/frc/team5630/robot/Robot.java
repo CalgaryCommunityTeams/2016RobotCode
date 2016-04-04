@@ -105,17 +105,17 @@ public class Robot extends IterativeRobot {
 
 	public void autonomousPeriodic() {
 		// This function is called periodically during autonomous
-//		if (autoLoopCounter < 80) {
-//			arm.set(forwardLimit - 0.215);
-//			robotDrive1.arcadeDrive(0.7, 0);
-//		} else if (autoLoopCounter < 140) {
-//			robotDrive1.arcadeDrive(0.8, 0);
-//		} else if (autoLoopCounter < 180) {
-//			robotDrive1.arcadeDrive(0.2, 0);
-//		}
-//		System.out.println(autoLoopCounter);
-//
-//		autoLoopCounter++;
+		if (autoLoopCounter < 80) {
+			arm.set(forwardLimit - 0.215);
+			robotDrive1.arcadeDrive(-0.7, 0);
+		} else if (autoLoopCounter < 140) {
+			robotDrive1.arcadeDrive(-0.8, 0);
+		} else if (autoLoopCounter < 160) {
+			robotDrive1.arcadeDrive(-0.2, 0);
+		}
+		System.out.println(autoLoopCounter);
+
+		autoLoopCounter++;
 	}
 
 	int outputCounter;
