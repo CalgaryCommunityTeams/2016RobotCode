@@ -28,17 +28,17 @@ public class Robot extends IterativeRobot {
 	double flySpeed, armTargetPosition, armSpeed, intakeSpeed = 1;
 	int autoLoopCounter, flywheelEnable, direction, autoIntakeTimer;
 	boolean autoIntakeEnable, autoShooter;
-	boolean buttonA, buttonB, buttonX, buttonY, buttonLB, buttonRB, buttonBack, buttonStart, buttonRStick;
+	boolean buttonA, buttonB, buttonX, buttonY, buttonLB, buttonRB, buttonBack, buttonStart, buttonLStick, buttonRStick;
 	boolean buttonALast, buttonBLast, buttonXLast, buttonYLast, buttonLBLast, buttonRBLast, buttonBackLast,
-			buttonStartLast, buttonRStickLast;
+			buttonStartLast, buttonLStickLast, buttonRStickLast;
 	int buttonPOV;
 	int buttonPOVLast;
 	int shootTimer = 0;
 	boolean autoEnableFlywheel = false; // Set options for features
 	CameraServer Camera;
 	CANTalon flyWheel, arm;
-	double forwardLimit = -0.09;
-	double reverseLimit = forwardLimit - 0.325;
+	double forwardLimit = -0.10;
+	double reverseLimit = forwardLimit - 0.345;
 
 	public void robotInit() {
 		// This function is run when the robot is first started up and should be
@@ -83,7 +83,7 @@ public class Robot extends IterativeRobot {
 		arm.configPeakOutputVoltage(12.0f, -12.0f);
 		arm.setAllowableClosedLoopErr(0);
 		arm.setProfile(0);
-		arm.setPID(2, 0.001, 0.00003);
+		arm.setPID(0.2, 0.0001, 0.000003);
 		arm.setReverseSoftLimit(reverseLimit);
 		arm.enableReverseSoftLimit(true);
 		arm.setForwardSoftLimit(forwardLimit);
@@ -143,10 +143,28 @@ public class Robot extends IterativeRobot {
 		buttonRB = joystickInput1.getRawButton(6);
 		buttonBack = joystickInput1.getRawButton(7);
 		buttonStart = joystickInput1.getRawButton(8);
+		buttonLStick = joystickInput1.getRawButton(9);
 		buttonRStick = joystickInput1.getRawButton(10);
 		buttonPOV = joystickInput1.getPOV();
 		armTargetPosition = arm.getPosition() + (joystickInput1.getRawAxis(3) - joystickInput1.getRawAxis(2)) / 10;
 		armSpeed = joystickInput1.getRawAxis(3) - joystickInput1.getRawAxis(2);
+		
+		if(buttonLStick != buttonLStickLast && buttonLStick)
+		{
+			arm.enableForwardSoftLimit(false);
+			arm.enableReverseSoftLimit(false);
+		}
+		else if(buttonLStick != buttonLStickLast && !buttonLStick)
+		{
+			forwardLimit = arm.getPosition()-0.04;
+			reverseLimit = forwardLimit - 0.345;
+			
+			arm.setReverseSoftLimit(reverseLimit);
+			arm.setForwardSoftLimit(forwardLimit);
+			arm.enableReverseSoftLimit(true);
+			arm.enableForwardSoftLimit(true);
+		}
+		
 		if (autoIntakeEnable == true) {
 			intakeDriver.set(-intakeSpeed);
 			autoIntakeTimer++;
@@ -254,6 +272,7 @@ public class Robot extends IterativeRobot {
 
 		// arm.set(armTargetPosition);
 
+		
 		robotDrive1.arcadeDrive(direction * joystickInput1.getRawAxis(1), -joystickInput1.getRawAxis(4));
 		// if(joystickInput1.getRawButton(10))
 		// {
