@@ -26,7 +26,6 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
  * directory.
  */
 public class Robot extends IterativeRobot {
-	String FILE_NAME = "/ForwardLimit.dat";
 	RobotDrive robotDrive1;
 	Joystick joystickInput1;
 	Talon intakeDriver;
@@ -41,7 +40,6 @@ public class Robot extends IterativeRobot {
 	boolean buttonALast, buttonBLast, buttonXLast, buttonYLast, buttonLBLast, buttonRBLast, buttonBackLast,
 			buttonStartLast, buttonLStickLast, buttonRStickLast;
 	int buttonPOV;
-	//Timer timer;
 	int buttonPOVLast;
 	int shootTimer = 0;
 	boolean autoEnableFlywheel = false; // Set options for features
