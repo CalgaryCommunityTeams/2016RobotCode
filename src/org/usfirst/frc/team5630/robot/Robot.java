@@ -129,12 +129,9 @@ public class Robot extends IterativeRobot {
 		if (autoLoopCounter < 80) {
 			arm.set(forwardLimit - 0.215);
 			robotDrive1.arcadeDrive(-0.7, 0);
-		} else if (autoLoopCounter < 120) {
-			robotDrive1.arcadeDrive(-0.8, 0);
 		} else if (autoLoopCounter < 160) {
-			robotDrive1.arcadeDrive(-0.2, 0);
+			robotDrive1.arcadeDrive(+0.7, 0);
 		}
-
 		autoLoopCounter++;
 	}
 
