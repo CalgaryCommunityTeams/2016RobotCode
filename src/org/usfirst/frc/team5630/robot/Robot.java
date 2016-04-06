@@ -52,20 +52,16 @@ public class Robot extends IterativeRobot {
 
 	public void robotInit() {
 
-		// File file = new File(FILE_NAME);
-		// try {
-		// Scanner input = new Scanner(file);
-		// forwardLimit = input.nextInt();
-		// } catch (FileNotFoundException e) {
-		forwardLimit = -0.15;
-		// }
+		forwardLimit = -0.15; 
+		//IMPORTANT
+		//This should be the arm position when arm is upright subtracted by 0.04.
+		//If this is not done after taking the arm motor off, the autonomous code may break the arm
+		
 		reverseLimit = forwardLimit - 0.33;
 		// This function is run when the robot is first started up and should be
 		// used for any initialization code.
 		robotDrive1 = new RobotDrive(0, 1, 2, 3);
-		// flywheelDriver = new Talon(4);
 		intakeDriver = new Talon(4);
-		// armDriver = new Talon(6);
 		joystickInput1 = new Joystick(0);
 		intakeBumper = new DigitalInput(0);
 		flyWheel = new CANTalon(1); // Initialize the CanTalonSRX on device
@@ -89,6 +85,7 @@ public class Robot extends IterativeRobot {
 		flyWheel.setProfile(0);
 		flyWheel.setPID(0.31, 0.0006, 0.0000);
 		flyWheel.setIZone(5000);
+		//The IZone is the area which the I will accumulate. Note, this is in native I units, which I have no idea what they mean. But this works.
 		flyWheel.setF(0.0);
 		flyWheel.set(0);
 
@@ -128,16 +125,25 @@ public class Robot extends IterativeRobot {
 	public void autonomousPeriodic() {
 		// This function is called periodically during autonomous
 		
-		if (autoLoopCounter < 80) {
+		if (autoLoopCounter < 60) {
 			arm.set(forwardLimit - 0.215);
-			robotDrive1.arcadeDrive(-0.7, 0);
+			robotDrive1.arcadeDrive(-0.75, 0.2);
 		} else if (autoLoopCounter < 120) {
-			robotDrive1.arcadeDrive(-0.8, 0);
+			robotDrive1.arcadeDrive(-1, 0.2);
 		} else if (autoLoopCounter < 160) {
-			robotDrive1.arcadeDrive(-0.2, 0);
-		}
-
+			robotDrive1.arcadeDrive(-0.8, 0.2);
+		} else if (autoLoopCounter <185){
+			robotDrive1.arcadeDrive(-0.8, -0.5);
+		} else if (autoLoopCounter < 210){
+			robotDrive1.arcadeDrive(-0.8, 0.5);
+		} else if (autoLoopCounter < 235){
+			robotDrive1.arcadeDrive(-0.8, -0.5);
+		} else if (autoLoopCounter < 260)
+			robotDrive1.arcadeDrive(-0.8, 0.5);
 		autoLoopCounter++;
+		//First 1.2 seconds: drives forward @ 75% Speed
+		//1.2s to 2.4s: drives foward@100% speed
+		//2.4s to 5.2s: alternates which side of wheels run (To try to get out when stuck on things, should have no impact when not stuck)
 	}
 
 	int outputCounter;
@@ -171,6 +177,7 @@ public class Robot extends IterativeRobot {
 		buttonPOV = joystickInput1.getPOV();
 		//armTargetPosition = arm.getPosition() + (joystickInput1.getRawAxis(3) - joystickInput1.getRawAxis(2)) / 6.5;
 		armSpeed = (joystickInput1.getRawAxis(3) - joystickInput1.getRawAxis(2))/2.3;
+		//I divide by 2.3 so that the arm doesn't move as fast
 		
 		if (buttonLStick != buttonLStickLast) {
 			if (buttonLStick) {
@@ -195,6 +202,8 @@ public class Robot extends IterativeRobot {
 //				//
 //				// }
 //				// writer.println(forwardLimit);
+				
+				//The not commented out code disables the soft limits. PERNAMENTLY, IF CLICKED DURING MATCH, SOFT LIMITS WILL NOT BE BACK UNTIL ENTIRE CODE IS RESTARTED.
 			}
 		}
 
@@ -214,6 +223,7 @@ public class Robot extends IterativeRobot {
 			}
 
 			if (autoIntakeTimer > maxIntakeTime || (buttonBack && !buttonBackLast) || buttonLB || buttonRB) {
+			//If something else that controls the flyWheel is pressed, do not start the autointake function
 				autoIntakeEnable = false;
 				intakeDriver.set(0);
 			}
@@ -241,6 +251,7 @@ public class Robot extends IterativeRobot {
 			intakeDriver.set(-intakeSpeed);
 		} else if (buttonLB) {
 			intakeDriver.set(intakeSpeed/2);
+			//Out speed is halved so the ball doesn't get ejected by driver as easily
 		} else if (!autoIntakeEnable) {
 			intakeDriver.set(0);
 		}
@@ -272,25 +283,29 @@ public class Robot extends IterativeRobot {
 															// // between 0 and
 															// 1
 		}
-		if (buttonStartLast != buttonStart) {
-			buttonStartLast = buttonStart;
-			if (buttonStartLast == true)
-				direction = -direction;
-		}
-
 		if (flywheelEnable == 1) {
 			flyWheel.changeControlMode(CANTalon.TalonControlMode.Speed);
 			flyWheel.set(flySpeed);
 		} else {
 			flyWheel.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 			flyWheel.set(0);
-		}
-		if (buttonY != buttonYLast && buttonY && flywheelEnable == 1) {
-			autoShooter = true;
+		}		
+		
+		if (buttonStartLast != buttonStart) {
+			buttonStartLast = buttonStart;
+			if (buttonStartLast == true)
+				direction = -direction;
 		}
 
+
+		if (buttonY != buttonYLast && buttonY && flywheelEnable == 1) {
+			autoShooter = true;
+			//THe autoShooter boolean tells the program to wait for the flyWheel to get within 2 of target speed
+		}
 		if (autoShooter && Math.abs(flyWheel.getSpeed() - flySpeed) < 2) {
 			{
+				//Once within 2 of target speed, autoShooter is no longer needed, so it is false.
+				//It started a timer for the intake to push the ball forwards for 0.8s
 				shootTimer = 40;
 				autoShooter = false;
 			}
@@ -301,17 +316,13 @@ public class Robot extends IterativeRobot {
 		} else if (shootTimer == 1) {
 			shootTimer--;
 			flywheelEnable = 0;
+			//Disables the flyWheel after the shot
 		}
 
-		// arm.set(armTargetPosition);
+
 
 		robotDrive1.arcadeDrive(direction * joystickInput1.getRawAxis(1), -joystickInput1.getRawAxis(4));
-		// if(joystickInput1.getRawButton(10))
-		// {
-		// arm.setPosition(0);
-		// arm.setEncPosition(0);
-		//
-		// }
+
 		if (outputCounter == 0) {
 			if (Math.abs(flyWheel.getSpeed() - flySpeed) < 10) {
 				System.out.println("\n\n\n\n\n\nYOU'RE GOOD TO SHOOT\nYOU'RE GOOD TO SHOOT\n\n\tArm Position:   "
@@ -320,7 +331,7 @@ public class Robot extends IterativeRobot {
 						+ "\nAutoshooter: " + autoShooter);
 			} else {
 				System.out.println("\n\n\n\n\n\n\n\n\n\tArm Position:   " + arm.getPosition() + "\n\nTargetFlySpeed:"
-						+ flySpeed + "\nWheel Speed:   " + flyWheel.getSpeed() + "\nAutoshooter: " + autoShooter);
+						+ flySpeed + "\nWheel Speed:   " + flyWheel.getSpeed());
 			}
 		}
 		buttonALast = buttonA;
