@@ -52,7 +52,7 @@ public class Robot extends IterativeRobot {
 
 	public void robotInit() {
 
-		forwardLimit = -0.15; 
+		forwardLimit = -0.6452636 - 0.02; 
 		//IMPORTANT
 		//This should be the arm position when arm is upright subtracted by 0.04.
 		//If this is not done after taking the arm motor off, the autonomous code may break the arm
@@ -152,7 +152,7 @@ public class Robot extends IterativeRobot {
 		// This function is called once each time the robot enters tele-operated
 		// mode
 		flywheelEnable = 0;
-		flySpeed = 4100;
+		flySpeed = 4700;
 		direction = 1;
 		buttonALast = false;
 		autoIntakeEnable = false;
