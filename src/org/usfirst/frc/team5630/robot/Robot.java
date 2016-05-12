@@ -69,8 +69,8 @@ public class Robot extends IterativeRobot {
 		flyWheel = new CANTalon(1); // Initialize the CanTalonSRX on device
 		// 1.
 
-		spike = new Relay(0); // Initializes spike relay
-		lightToggle = true;
+//		spike = new Relay(0); // Initializes spike relay
+//		lightToggle = true;
 		// spike.set(Relay.Value.kForward); //Power flows Positive to Negative,
 		// light green
 		// spike.set(Relay.Value.kOff); //No power flows, light orange
@@ -256,16 +256,16 @@ public class Robot extends IterativeRobot {
 		/*
 		 * Spike code
 		 */
-		if (buttonRStick != buttonRStickLast && buttonRStick) {
-			if (lightToggle) {
-				spike.set(Relay.Value.kForward);
-				lightToggle = false;
-			} else {
-				spike.set(Relay.Value.kOff);
-				lightToggle = true;
-			}
-
-		}
+//		if (buttonRStick != buttonRStickLast && buttonRStick) {
+//			if (lightToggle) {
+//				spike.set(Relay.Value.kForward);
+//				lightToggle = false;
+//			} else {
+//				spike.set(Relay.Value.kOff);
+//				lightToggle = true;
+//			}
+//
+//		}
 		// Spike code for light (above)
 
 		if (buttonRB) {
