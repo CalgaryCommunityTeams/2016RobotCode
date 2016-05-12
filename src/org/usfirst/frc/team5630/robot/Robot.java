@@ -1,6 +1,5 @@
 package org.usfirst.frc.team5630.robot;
 
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -41,7 +40,8 @@ public class Robot extends IterativeRobot {
 	boolean buttonALast, buttonBLast, buttonXLast, buttonYLast, buttonLBLast, buttonRBLast, buttonBackLast,
 			buttonStartLast, buttonLStickLast, buttonRStickLast;
 	int buttonPOV;
-	//Timer timer;
+	// Timer timer;
+	double holdPosition;
 	int buttonPOVLast;
 	int shootTimer = 0;
 	boolean autoEnableFlywheel = false; // Set options for features
@@ -52,12 +52,14 @@ public class Robot extends IterativeRobot {
 
 	public void robotInit() {
 
-		forwardLimit = -0.6452636 - 0.02; 
-		//IMPORTANT
-		//This should be the arm position when arm is upright subtracted by 0.04.
-		//If this is not done after taking the arm motor off, the autonomous code may break the arm
-		
-		reverseLimit = forwardLimit - 0.33;
+		forwardLimit = -0.11 - 0.01;
+		// IMPORTANT
+		// This should be the arm position when arm is upright subtracted by
+		// 0.04.
+		// If this is not done after taking the arm motor off, the autonomous
+		// code may break the arm
+
+		reverseLimit = forwardLimit - 0.25;
 		// This function is run when the robot is first started up and should be
 		// used for any initialization code.
 		robotDrive1 = new RobotDrive(0, 1, 2, 3);
@@ -85,7 +87,8 @@ public class Robot extends IterativeRobot {
 		flyWheel.setProfile(0);
 		flyWheel.setPID(0.31, 0.0006, 0.0000);
 		flyWheel.setIZone(5000);
-		//The IZone is the area which the I will accumulate. Note, this is in native I units, which I have no idea what they mean. But this works.
+		// The IZone is the area which the I will accumulate. Note, this is in
+		// native I units, which I have no idea what they mean. But this works.
 		flyWheel.setF(0.0);
 		flyWheel.set(0);
 
@@ -100,7 +103,7 @@ public class Robot extends IterativeRobot {
 		arm.configPeakOutputVoltage(12.0f, -12.0f);
 		arm.setAllowableClosedLoopErr(0);
 		arm.setProfile(0);
-		arm.setPID(1.25, 0.0003, 0.00003);
+		arm.setPID(1, 0.0003, 0.00003);
 		arm.setReverseSoftLimit(reverseLimit);
 		arm.enableReverseSoftLimit(true);
 		arm.setForwardSoftLimit(forwardLimit);
@@ -118,32 +121,33 @@ public class Robot extends IterativeRobot {
 	public void autonomousInit() {
 		// This function is run once each time the robot enters autonomous mode
 		autoLoopCounter = 0;
-		//timer.start();
+		// timer.start();
 		arm.changeControlMode(CANTalon.TalonControlMode.Position);
 	}
 
 	public void autonomousPeriodic() {
 		// This function is called periodically during autonomous
-		
+
 		if (autoLoopCounter < 60) {
-			arm.set(forwardLimit - 0.215);
+			arm.set(forwardLimit - 0.15);
 			robotDrive1.arcadeDrive(-0.75, 0.2);
 		} else if (autoLoopCounter < 120) {
 			robotDrive1.arcadeDrive(-1, 0.2);
 		} else if (autoLoopCounter < 160) {
 			robotDrive1.arcadeDrive(-0.8, 0.2);
-		} else if (autoLoopCounter <185){
+		} else if (autoLoopCounter < 185) {
 			robotDrive1.arcadeDrive(-0.8, -0.5);
-		} else if (autoLoopCounter < 210){
+		} else if (autoLoopCounter < 210) {
 			robotDrive1.arcadeDrive(-0.8, 0.5);
-		} else if (autoLoopCounter < 235){
+		} else if (autoLoopCounter < 235) {
 			robotDrive1.arcadeDrive(-0.8, -0.5);
 		} else if (autoLoopCounter < 260)
 			robotDrive1.arcadeDrive(-0.8, 0.5);
 		autoLoopCounter++;
-		//First 1.2 seconds: drives forward @ 75% Speed
-		//1.2s to 2.4s: drives foward@100% speed
-		//2.4s to 5.2s: alternates which side of wheels run (To try to get out when stuck on things, should have no impact when not stuck)
+		// First 1.2 seconds: drives forward @ 75% Speed
+		// 1.2s to 2.4s: drives foward@100% speed
+		// 2.4s to 5.2s: alternates which side of wheels run (To try to get out
+		// when stuck on things, should have no impact when not stuck)
 	}
 
 	int outputCounter;
@@ -175,35 +179,51 @@ public class Robot extends IterativeRobot {
 		buttonLStick = joystickInput1.getRawButton(9);
 		buttonRStick = joystickInput1.getRawButton(10);
 		buttonPOV = joystickInput1.getPOV();
-		//armTargetPosition = arm.getPosition() + (joystickInput1.getRawAxis(3) - joystickInput1.getRawAxis(2)) / 6.5;
-		armSpeed = (joystickInput1.getRawAxis(3) - joystickInput1.getRawAxis(2))/2.3;
-		//I divide by 2.3 so that the arm doesn't move as fast
+		// armTargetPosition = arm.getPosition() + (joystickInput1.getRawAxis(3)
+		// - joystickInput1.getRawAxis(2)) / 6.5;
 		
+		if (joystickInput1.getRawAxis(3) < 0.075 && joystickInput1.getRawAxis(2) < 0.075){
+			if (armSpeed != 0) {
+				holdPosition = arm.getPosition();
+				armSpeed = 0;
+				arm.changeControlMode(CANTalon.TalonControlMode.Position);
+			}
+			arm.set(holdPosition);
+		} else
+		{
+			arm.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+			armSpeed = (joystickInput1.getRawAxis(3) - joystickInput1.getRawAxis(2)) * 0.35;
+			arm.set(armSpeed);
+		}
+		// I divide by 2.3 so that the arm doesn't move as fast
+
 		if (buttonLStick != buttonLStickLast) {
 			if (buttonLStick) {
 				arm.enableForwardSoftLimit(false);
 				arm.enableReverseSoftLimit(false);
-//			} else {
-//				forwardLimit = arm.getPosition() - 0.03;
-//				reverseLimit = forwardLimit - 0.33;
-//
-//				arm.setReverseSoftLimit(reverseLimit);
-//				arm.setForwardSoftLimit(forwardLimit);
-//				arm.enableReverseSoftLimit(true);
-//				arm.enableForwardSoftLimit(true);
-//				// PrintWriter writer = null;
-//				// // File outFile = new File(FILE_NAME);
-//				// try {
-//				// writer = new PrintWriter(FILE_NAME, "UTF-8");
-//				// } catch (FileNotFoundException e) {
-//				// // TODO Auto-generated catch block
-//				// e.printStackTrace();
-//				// } catch (UnsupportedEncodingException e) {
-//				//
-//				// }
-//				// writer.println(forwardLimit);
-				
-				//The not commented out code disables the soft limits. PERNAMENTLY, IF CLICKED DURING MATCH, SOFT LIMITS WILL NOT BE BACK UNTIL ENTIRE CODE IS RESTARTED.
+				// } else {
+				// forwardLimit = arm.getPosition() - 0.03;
+				// reverseLimit = forwardLimit - 0.33;
+				//
+				// arm.setReverseSoftLimit(reverseLimit);
+				// arm.setForwardSoftLimit(forwardLimit);
+				// arm.enableReverseSoftLimit(true);
+				// arm.enableForwardSoftLimit(true);
+				// // PrintWriter writer = null;
+				// // // File outFile = new File(FILE_NAME);
+				// // try {
+				// // writer = new PrintWriter(FILE_NAME, "UTF-8");
+				// // } catch (FileNotFoundException e) {
+				// // // TODO Auto-generated catch block
+				// // e.printStackTrace();
+				// // } catch (UnsupportedEncodingException e) {
+				// //
+				// // }
+				// // writer.println(forwardLimit);
+
+				// The not commented out code disables the soft limits.
+				// PERNAMENTLY, IF CLICKED DURING MATCH, SOFT LIMITS WILL NOT BE
+				// BACK UNTIL ENTIRE CODE IS RESTARTED.
 			}
 		}
 
@@ -223,7 +243,8 @@ public class Robot extends IterativeRobot {
 			}
 
 			if (autoIntakeTimer > maxIntakeTime || (buttonBack && !buttonBackLast) || buttonLB || buttonRB) {
-			//If something else that controls the flyWheel is pressed, do not start the autointake function
+				// If something else that controls the flyWheel is pressed, do
+				// not start the autointake function
 				autoIntakeEnable = false;
 				intakeDriver.set(0);
 			}
@@ -250,8 +271,9 @@ public class Robot extends IterativeRobot {
 		if (buttonRB) {
 			intakeDriver.set(-intakeSpeed);
 		} else if (buttonLB) {
-			intakeDriver.set(intakeSpeed/2);
-			//Out speed is halved so the ball doesn't get ejected by driver as easily
+			intakeDriver.set(intakeSpeed / 2);
+			// Out speed is halved so the ball doesn't get ejected by driver as
+			// easily
 		} else if (!autoIntakeEnable) {
 			intakeDriver.set(0);
 		}
@@ -267,7 +289,7 @@ public class Robot extends IterativeRobot {
 		// } else if (buttonPOV == 180) {
 		// arm.set(reverseLimit);
 		// } else if (Math.abs(armSpeed) > 0.1) {
-		arm.set(armSpeed);
+
 		// }
 		//
 		// if (buttonPOV == 90 && buttonPOVLast != buttonPOV) {
@@ -289,23 +311,25 @@ public class Robot extends IterativeRobot {
 		} else {
 			flyWheel.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 			flyWheel.set(0);
-		}		
-		
+		}
+
 		if (buttonStartLast != buttonStart) {
 			buttonStartLast = buttonStart;
 			if (buttonStartLast == true)
 				direction = -direction;
 		}
 
-
 		if (buttonY != buttonYLast && buttonY && flywheelEnable == 1) {
 			autoShooter = true;
-			//THe autoShooter boolean tells the program to wait for the flyWheel to get within 2 of target speed
+			// THe autoShooter boolean tells the program to wait for the
+			// flyWheel to get within 2 of target speed
 		}
 		if (autoShooter && Math.abs(flyWheel.getSpeed() - flySpeed) < 2) {
 			{
-				//Once within 2 of target speed, autoShooter is no longer needed, so it is false.
-				//It started a timer for the intake to push the ball forwards for 0.8s
+				// Once within 2 of target speed, autoShooter is no longer
+				// needed, so it is false.
+				// It started a timer for the intake to push the ball forwards
+				// for 0.8s
 				shootTimer = 40;
 				autoShooter = false;
 			}
@@ -316,10 +340,8 @@ public class Robot extends IterativeRobot {
 		} else if (shootTimer == 1) {
 			shootTimer--;
 			flywheelEnable = 0;
-			//Disables the flyWheel after the shot
+			// Disables the flyWheel after the shot
 		}
-
-
 
 		robotDrive1.arcadeDrive(direction * joystickInput1.getRawAxis(1), -joystickInput1.getRawAxis(4));
 
