@@ -52,7 +52,7 @@ public class Robot extends IterativeRobot {
 
 	public void robotInit() {
 
-		forwardLimit = -0.11 - 0.01;
+		forwardLimit = -0.93 - 0.01;
 		// IMPORTANT
 		// This should be the arm position when arm is upright subtracted by
 		// 0.04.
