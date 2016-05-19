@@ -182,19 +182,19 @@ public class Robot extends IterativeRobot {
 		// armTargetPosition = arm.getPosition() + (joystickInput1.getRawAxis(3)
 		// - joystickInput1.getRawAxis(2)) / 6.5;
 		
-		if (joystickInput1.getRawAxis(3) < 0.075 && joystickInput1.getRawAxis(2) < 0.075){
-			if (armSpeed != 0) {
-				holdPosition = arm.getPosition();
-				armSpeed = 0;
-				arm.changeControlMode(CANTalon.TalonControlMode.Position);
-			}
-			arm.set(holdPosition);
-		} else
-		{
-			arm.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+//		if (joystickInput1.getRawAxis(3) < 0.075 && joystickInput1.getRawAxis(2) < 0.075){
+//			if (armSpeed != 0) {
+//				holdPosition = arm.getPosition();
+//				armSpeed = 0;
+//				arm.changeControlMode(CANTalon.TalonControlMode.Position);
+//			}
+//			arm.set(holdPosition);
+//		} else
+//		{
+//			arm.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 			armSpeed = (joystickInput1.getRawAxis(3) - joystickInput1.getRawAxis(2)) * 0.35;
 			arm.set(armSpeed);
-		}
+//		}
 		// I divide by 2.3 so that the arm doesn't move as fast
 
 		if (buttonLStick != buttonLStickLast) {
