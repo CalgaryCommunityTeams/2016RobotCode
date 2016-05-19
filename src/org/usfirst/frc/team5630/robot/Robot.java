@@ -114,7 +114,7 @@ public class Robot extends IterativeRobot {
 		Camera.startAutomaticCapture("cam0");
 		// the camera name (ex "cam0") can be found through the roboRIO web
 		// interface
-
+		holdPosition = arm.getPosition();
 		// Basically copy-pasta'd the code from an example code.
 	}
 
