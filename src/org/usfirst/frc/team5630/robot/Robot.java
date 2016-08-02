@@ -69,8 +69,8 @@ public class Robot extends IterativeRobot {
 		flyWheel = new CANTalon(1); // Initialize the CanTalonSRX on device
 		// 1.
 
-//		spike = new Relay(0); // Initializes spike relay
-//		lightToggle = true;
+		// spike = new Relay(0); // Initializes spike relay
+		// lightToggle = true;
 		// spike.set(Relay.Value.kForward); //Power flows Positive to Negative,
 		// light green
 		// spike.set(Relay.Value.kOff); //No power flows, light orange
@@ -78,7 +78,7 @@ public class Robot extends IterativeRobot {
 		flyWheel.reset();
 		flyWheel.enable();
 		flyWheel.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
-		flyWheel.changeControlMode(CANTalon.TalonControlMode.Speed);
+		flyWheel.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 		flyWheel.configEncoderCodesPerRev(1024);
 		flyWheel.reverseSensor(false);
 		flyWheel.reverseOutput(true);
@@ -181,20 +181,21 @@ public class Robot extends IterativeRobot {
 		buttonPOV = joystickInput1.getPOV();
 		// armTargetPosition = arm.getPosition() + (joystickInput1.getRawAxis(3)
 		// - joystickInput1.getRawAxis(2)) / 6.5;
-		
-//		if (joystickInput1.getRawAxis(3) < 0.075 && joystickInput1.getRawAxis(2) < 0.075){
-//			if (armSpeed != 0) {
-//				holdPosition = arm.getPosition();
-//				armSpeed = 0;
-//				arm.changeControlMode(CANTalon.TalonControlMode.Position);
-//			}
-//			arm.set(holdPosition);
-//		} else
-//		{
-//			arm.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-			armSpeed = (joystickInput1.getRawAxis(3) - joystickInput1.getRawAxis(2)) * 0.35;
-			arm.set(armSpeed);
-//		}
+
+		// if (joystickInput1.getRawAxis(3) < 0.075 &&
+		// joystickInput1.getRawAxis(2) < 0.075){
+		// if (armSpeed != 0) {
+		// holdPosition = arm.getPosition();
+		// armSpeed = 0;
+		// arm.changeControlMode(CANTalon.TalonControlMode.Position);
+		// }
+		// arm.set(holdPosition);
+		// } else
+		// {
+		// arm.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+		armSpeed = (joystickInput1.getRawAxis(3) - joystickInput1.getRawAxis(2)) * 0.35;
+		arm.set(armSpeed + 0.07);
+		// }
 		// I divide by 2.3 so that the arm doesn't move as fast
 
 		if (buttonLStick != buttonLStickLast) {
@@ -256,16 +257,16 @@ public class Robot extends IterativeRobot {
 		/*
 		 * Spike code
 		 */
-//		if (buttonRStick != buttonRStickLast && buttonRStick) {
-//			if (lightToggle) {
-//				spike.set(Relay.Value.kForward);
-//				lightToggle = false;
-//			} else {
-//				spike.set(Relay.Value.kOff);
-//				lightToggle = true;
-//			}
-//
-//		}
+		// if (buttonRStick != buttonRStickLast && buttonRStick) {
+		// if (lightToggle) {
+		// spike.set(Relay.Value.kForward);
+		// lightToggle = false;
+		// } else {
+		// spike.set(Relay.Value.kOff);
+		// lightToggle = true;
+		// }
+		//
+		// }
 		// Spike code for light (above)
 
 		if (buttonRB) {
@@ -279,9 +280,9 @@ public class Robot extends IterativeRobot {
 		}
 
 		if (!buttonXLast && buttonX && flySpeed > 0) {
-			flySpeed = flySpeed - 50;
-		} else if (!buttonBLast && buttonB && flySpeed < 5500) {
-			flySpeed = flySpeed + 50;
+			flySpeed = flySpeed - 0.050;
+		} else if (!buttonBLast && buttonB && flySpeed < 1) {
+			flySpeed = flySpeed + 0.050;
 		}
 
 		// if (buttonPOV == 0) {
@@ -306,10 +307,8 @@ public class Robot extends IterativeRobot {
 															// 1
 		}
 		if (flywheelEnable == 1) {
-			flyWheel.changeControlMode(CANTalon.TalonControlMode.Speed);
 			flyWheel.set(flySpeed);
 		} else {
-			flyWheel.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 			flyWheel.set(0);
 		}
 
@@ -324,16 +323,6 @@ public class Robot extends IterativeRobot {
 			// THe autoShooter boolean tells the program to wait for the
 			// flyWheel to get within 2 of target speed
 		}
-		if (autoShooter && Math.abs(flyWheel.getSpeed() - flySpeed) < 2) {
-			{
-				// Once within 2 of target speed, autoShooter is no longer
-				// needed, so it is false.
-				// It started a timer for the intake to push the ball forwards
-				// for 0.8s
-				shootTimer = 40;
-				autoShooter = false;
-			}
-		}
 		if (shootTimer > 1) {
 			intakeDriver.set(-intakeSpeed);
 			shootTimer--;
@@ -346,16 +335,9 @@ public class Robot extends IterativeRobot {
 		robotDrive1.arcadeDrive(direction * joystickInput1.getRawAxis(1), -joystickInput1.getRawAxis(4));
 
 		if (outputCounter == 0) {
-			if (Math.abs(flyWheel.getSpeed() - flySpeed) < 10) {
-				System.out.println("\n\n\n\n\n\nYOU'RE GOOD TO SHOOT\nYOU'RE GOOD TO SHOOT\n\n\tArm Position:   "
-						+ arm.getPosition() + "\tArm TargetPos:" + (arm.getPulseWidthPosition() & 0xFFF)
-						+ "\n\nTargetFlySpeed:" + flySpeed + "\nWheel Speed:   " + flyWheel.getSpeed()
-						+ "\nAutoshooter: " + autoShooter);
-			} else {
-				System.out.println("\n\n\n\n\n\n\n\n\n\tArm Position:   " + arm.getPosition() + "\n\nTargetFlySpeed:"
-						+ flySpeed + "\nWheel Speed:   " + flyWheel.getSpeed());
+					System.out.println("\n\n\n\n\n\n\n\n\n\tArm Position:   " + arm.getPosition());
 			}
-		}
+		
 		buttonALast = buttonA;
 		buttonBLast = buttonB;
 		buttonXLast = buttonX;
@@ -363,7 +345,6 @@ public class Robot extends IterativeRobot {
 		buttonLBLast = buttonLB;
 		buttonRBLast = buttonRB;
 		buttonBackLast = buttonBack;
-		buttonStartLast = buttonStart;
 		buttonPOVLast = buttonPOV;
 		buttonLStickLast = buttonLStick;
 		buttonRStickLast = buttonRStick;
